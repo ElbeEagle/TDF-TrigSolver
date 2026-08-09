@@ -20,6 +20,7 @@ from scripts.data_extraction.dataset_adapters import (
     iter_local_normalized,
 )
 from scripts.data_extraction.extract_trig_problems import build_parser, extract
+from scripts.data_extraction.export_original_format import export_original_format
 from scripts.data_extraction.trig_rules import classify_record
 from scripts.data_extraction.validate_extraction import validate
 
@@ -208,6 +209,46 @@ def test_end_to_end_extraction_and_validation(tmp_path: Path) -> None:
     )
     assert report["status"] == "passed"
     assert report["candidate_count"] == 2
+
+
+def test_export_original_format_preserves_raw_schema(tmp_path: Path) -> None:
+    source = tmp_path / "A.jsonl"
+    output = tmp_path / "A_original_format.jsonl"
+    raw_records = [
+        {"id": "1", "question": "q1", "options": ["a"], "analysis": "a1"},
+        {"id": "2", "analysis": "a2", "question": "q2", "options": []},
+    ]
+    wrappers = [
+        {
+            "source": {"id": raw["id"]},
+            "classification": {"label": "A"},
+            "raw_record": raw,
+        }
+        for raw in raw_records
+    ]
+    source.write_text(
+        "".join(json.dumps(row, ensure_ascii=False) + "\n" for row in wrappers),
+        encoding="utf-8",
+    )
+
+    summary = export_original_format(source, output)
+
+    exported = list(iter_json_records(output))
+    assert exported == raw_records
+    assert list(exported[0]) == list(raw_records[0])
+    assert list(exported[1]) == list(raw_records[1])
+    assert summary["records"] == 2
+    assert summary["fields"] == list(raw_records[0])
+    with pytest.raises(FileExistsError, match="use --overwrite"):
+        export_original_format(source, output)
+
+
+def test_export_original_format_rejects_invalid_wrapper(tmp_path: Path) -> None:
+    source = tmp_path / "A.jsonl"
+    source.write_text('{"classification":{"label":"A"}}\n', encoding="utf-8")
+
+    with pytest.raises(ValueError, match="raw_record"):
+        export_original_format(source, tmp_path / "output.jsonl")
 
 
 @pytest.mark.skipif(not CMM_PATH.exists(), reason="CMM-Math data is not available")
