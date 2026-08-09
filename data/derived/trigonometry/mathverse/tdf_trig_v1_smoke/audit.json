@@ -1,0 +1,35 @@
+{
+  "rule_version": "tdf_trig_v1",
+  "scanned": 100,
+  "not_candidate": 64,
+  "candidates": 36,
+  "labels": {
+    "B": 11,
+    "A": 25
+  },
+  "confidence": {
+    "B_high": 11,
+    "A_high": 25
+  },
+  "splits": {
+    "testmini": 100
+  },
+  "subjects": {},
+  "rule_contributions": {
+    "B_MEASUREMENT_APPLICATION": 11,
+    "A_FUNCTION_OBJECT": 25,
+    "A_FUNCTION_PROPERTY": 25,
+    "A_DIRECT_EXPRESSION_TASK": 25,
+    "A_TRIG_TOKEN": 25,
+    "A_TRIG_EQUATION": 4
+  },
+  "candidates_with_image_refs": 36,
+  "a_with_image_refs": 25,
+  "invalid_records": [],
+  "historical_sanity_check": {
+    "historical_a_candidates": 499,
+    "historical_a_with_images": 81,
+    "is_acceptance_target": false,
+    "difference_explanation": "v1 also admits formula-only direct tasks and semantic periodic models; counts are diagnostic and are never tuned to match the historical screen"
+  }
+}

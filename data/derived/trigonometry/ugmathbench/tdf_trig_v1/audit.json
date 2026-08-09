@@ -1,0 +1,49 @@
+{
+  "rule_version": "tdf_trig_v1",
+  "scanned": 534,
+  "not_candidate": 63,
+  "candidates": 471,
+  "labels": {
+    "B": 144,
+    "UNCERTAIN": 46,
+    "A": 281
+  },
+  "confidence": {
+    "B_high": 141,
+    "UNCERTAIN_medium": 46,
+    "A_high": 281,
+    "B_medium": 3
+  },
+  "splits": {
+    "test": 534
+  },
+  "subjects": {
+    "Trigonometry": 534
+  },
+  "rule_contributions": {
+    "B_MEASUREMENT_APPLICATION": 87,
+    "A_AUXILIARY_TRIG_TOKEN": 122,
+    "B_GENERAL_GEOMETRY_WITH_TRIG": 33,
+    "A_TRIG_EQUATION": 219,
+    "A_TRIG_TOKEN": 307,
+    "A_DIRECT_EXPRESSION_TASK": 214,
+    "A_FUNCTION_OBJECT": 60,
+    "A_FUNCTION_PROPERTY": 66,
+    "A_PERIODIC_MODEL": 6,
+    "A_NAMED_CONCEPT": 21,
+    "B_TRIANGLE_CONTEXT": 15,
+    "B_GEOMETRY_TARGET": 6,
+    "B_TRIG_LAW_OR_RATIO": 18,
+    "B_TRIANGLE_TRIG_TOOL": 3,
+    "B_POLAR_COORDINATE_GEOMETRY": 12
+  },
+  "candidates_with_image_refs": 0,
+  "a_with_image_refs": 0,
+  "invalid_records": [],
+  "historical_sanity_check": {
+    "historical_a_candidates": 499,
+    "historical_a_with_images": 81,
+    "is_acceptance_target": false,
+    "difference_explanation": "v1 also admits formula-only direct tasks and semantic periodic models; counts are diagnostic and are never tuned to match the historical screen"
+  }
+}

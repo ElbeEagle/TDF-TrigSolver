@@ -1,0 +1,29 @@
+{
+  "created_at": "2026-08-09T09:18:17.205167+00:00",
+  "rule_version": "tdf_trig_v1",
+  "dataset": "ugmathbench",
+  "source": {
+    "kind": "local",
+    "path": "/Users/ebeleagel/Documents/GitHub/TDF-TrigSolver/data/ugmathbench_trigonometry.jsonl",
+    "sha256": "f96ed17094bfcbfb178324dc8d20e9ab24457624bc5d864f2e5214976c8641bd",
+    "offset": 0,
+    "limit": null
+  },
+  "output_schema": 1,
+  "counts": {
+    "scanned": 534,
+    "candidates": 471,
+    "labels": {
+      "B": 144,
+      "UNCERTAIN": 46,
+      "A": 281
+    }
+  },
+  "download_images_for": [
+    "A",
+    "MIXED",
+    "UNCERTAIN"
+  ],
+  "downloaded_image_count": 0,
+  "review_seed": 20260809
+}

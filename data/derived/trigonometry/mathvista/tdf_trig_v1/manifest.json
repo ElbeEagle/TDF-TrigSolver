@@ -1,0 +1,37 @@
+{
+  "created_at": "2026-08-09T09:17:16.186165+00:00",
+  "rule_version": "tdf_trig_v1",
+  "dataset": "mathvista",
+  "source": {
+    "kind": "huggingface_dataset_viewer",
+    "repo": "AI4Math/MathVista",
+    "config": "default",
+    "split": "testmini",
+    "offset": 0,
+    "limit": null,
+    "hub_metadata": {
+      "id": "AI4Math/MathVista",
+      "sha": "2b6ad69445fbb5695c9b165475e8decdbeb97747",
+      "last_modified": "2024-02-11T23:09:05.000Z",
+      "private": false,
+      "gated": false
+    }
+  },
+  "output_schema": 1,
+  "counts": {
+    "scanned": 1000,
+    "candidates": 44,
+    "labels": {
+      "B": 31,
+      "A": 9,
+      "UNCERTAIN": 4
+    }
+  },
+  "download_images_for": [
+    "A",
+    "MIXED",
+    "UNCERTAIN"
+  ],
+  "downloaded_image_count": 3,
+  "review_seed": 20260809
+}

@@ -1,0 +1,27 @@
+# Operating-system files
+.DS_Store
+Thumbs.db
+
+# Local secrets and credentials (keep example templates versioned)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+docs/algorithm/
+
+# Editor settings
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+

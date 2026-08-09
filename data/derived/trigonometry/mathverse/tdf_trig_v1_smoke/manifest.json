@@ -1,0 +1,36 @@
+{
+  "created_at": "2026-08-09T09:17:51.652467+00:00",
+  "rule_version": "tdf_trig_v1",
+  "dataset": "mathverse",
+  "source": {
+    "kind": "huggingface_dataset_viewer",
+    "repo": "AI4Math/MathVerse",
+    "config": "testmini",
+    "split": "testmini",
+    "offset": 3100,
+    "limit": 100,
+    "hub_metadata": {
+      "id": "AI4Math/MathVerse",
+      "sha": "3bc86196678bad115a923d2851c6821dbe235939",
+      "last_modified": "2025-05-15T05:58:46.000Z",
+      "private": false,
+      "gated": false
+    }
+  },
+  "output_schema": 1,
+  "counts": {
+    "scanned": 100,
+    "candidates": 36,
+    "labels": {
+      "B": 11,
+      "A": 25
+    }
+  },
+  "download_images_for": [
+    "A",
+    "MIXED",
+    "UNCERTAIN"
+  ],
+  "downloaded_image_count": 3,
+  "review_seed": 20260809
+}

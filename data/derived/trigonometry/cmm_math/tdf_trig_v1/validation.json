@@ -1,0 +1,15 @@
+{
+  "status": "passed",
+  "candidate_count": 2151,
+  "label_counts": {
+    "B": 956,
+    "A": 953,
+    "UNCERTAIN": 222,
+    "MIXED": 20
+  },
+  "unique_ids": 2151,
+  "source_records_checked": 2151,
+  "media_checks": {},
+  "errors": [],
+  "warnings": []
+}

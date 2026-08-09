@@ -1,0 +1,67 @@
+{
+  "rule_version": "tdf_trig_v1",
+  "scanned": 28069,
+  "not_candidate": 25918,
+  "candidates": 2151,
+  "labels": {
+    "B": 956,
+    "A": 953,
+    "UNCERTAIN": 222,
+    "MIXED": 20
+  },
+  "confidence": {
+    "B_high": 951,
+    "A_high": 953,
+    "UNCERTAIN_medium": 222,
+    "B_medium": 5,
+    "MIXED_medium": 20
+  },
+  "splits": {
+    "test": 5821,
+    "train": 22248
+  },
+  "subjects": {
+    "解析几何": 3463,
+    "度量几何学": 3614,
+    "算术": 9854,
+    "代数": 3316,
+    "计数": 1953,
+    "变换几何": 359,
+    "图论": 70,
+    "组合几何学": 635,
+    "立体几何学": 2638,
+    "组合数学": 964,
+    "逻辑题": 543,
+    "画法几何学": 600,
+    "统计数学": 60
+  },
+  "rule_contributions": {
+    "B_TRIANGLE_CONTEXT": 566,
+    "B_INFERRED_SIDE_ANGLE_CONFIGURATION": 41,
+    "A_TRIG_TOKEN": 1554,
+    "B_TRIANGLE_TRIG_TOOL": 354,
+    "A_AUXILIARY_TRIG_TOKEN": 480,
+    "B_TRIG_LAW_OR_RATIO": 349,
+    "B_GEOMETRY_TARGET": 400,
+    "B_GENERAL_GEOMETRY_WITH_TRIG": 309,
+    "A_TRIG_EQUATION": 660,
+    "A_DIRECT_EXPRESSION_TASK": 569,
+    "A_NAMED_CONCEPT": 44,
+    "A_FUNCTION_OBJECT": 408,
+    "A_FUNCTION_PROPERTY": 392,
+    "A_PERIODIC_MODEL": 11,
+    "B_MEASUREMENT_APPLICATION": 159,
+    "B_DIAGRAM_TRIG_RATIO": 172,
+    "B_POLAR_COORDINATE_GEOMETRY": 117,
+    "B_ESSENTIAL_GEOMETRY_CONSTRAINT": 6
+  },
+  "candidates_with_image_refs": 649,
+  "a_with_image_refs": 112,
+  "invalid_records": [],
+  "historical_sanity_check": {
+    "historical_a_candidates": 499,
+    "historical_a_with_images": 81,
+    "is_acceptance_target": false,
+    "difference_explanation": "v1 also admits formula-only direct tasks and semantic periodic models; counts are diagnostic and are never tuned to match the historical screen"
+  }
+}

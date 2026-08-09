@@ -1,0 +1,15 @@
+{
+  "status": "passed",
+  "candidate_count": 36,
+  "label_counts": {
+    "B": 11,
+    "A": 25
+  },
+  "unique_ids": 36,
+  "source_records_checked": 0,
+  "media_checks": {
+    "verified": 3
+  },
+  "errors": [],
+  "warnings": []
+}
