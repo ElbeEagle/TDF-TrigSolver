@@ -1,0 +1,12 @@
+{
+  "schema_version": "0.1",
+  "frozen": false,
+  "source_path": "data/CMM-Math/data.jsonl",
+  "source_sha256": "4a3b7c103b97676f0624143ae89140663ee1276bf365c27f1f4cce0bd531c0a5",
+  "dev_count": 25,
+  "dev_sha256": "981dc38db6910a5dbb6d160883fada31ba71578684d88af1f3554fd4cd6f6fdc",
+  "test_candidate_count": 50,
+  "test_sha256": null,
+  "prompt_sha256": "5dcab25a5c85fc640e53c77b9a3beee5da02a4792a17bec978bd450d59010f75",
+  "freeze_blocker": "50 records require Oracle-URM/gold annotation and independent second-person review"
+}

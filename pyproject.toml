@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tdf-trigsolver"
+version = "0.1.0"
+description = "A pilot neuro-symbolic solver for Chinese trigonometric-function problems"
+requires-python = ">=3.12"
+dependencies = [
+  "antlr4-python3-runtime==4.11.*",
+  "lark==1.2.2",
+  "openai>=1.88,<2",
+  "pydantic>=2.12,<3",
+  "python-dotenv>=0.21,<2",
+  "sympy==1.14.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.4,<9"]
+
+[project.scripts]
+trig-solver = "trig_solver.cli:main"
+trig-experiment = "trig_solver.experiments.run:main"
+trig-summarize = "trig_solver.experiments.summarize:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+addopts = "-ra"
+testpaths = ["tests"]
+markers = ["integration: requires the configured external Qwen API"]

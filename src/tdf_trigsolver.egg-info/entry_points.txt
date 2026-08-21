@@ -1,0 +1,4 @@
+[console_scripts]
+trig-experiment = trig_solver.experiments.run:main
+trig-solver = trig_solver.cli:main
+trig-summarize = trig_solver.experiments.summarize:main

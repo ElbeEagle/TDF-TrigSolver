@@ -1,0 +1,12 @@
+Metadata-Version: 2.4
+Name: tdf-trigsolver
+Version: 0.1.0
+Summary: A pilot neuro-symbolic solver for Chinese trigonometric-function problems
+Requires-Python: >=3.12
+Requires-Dist: lark<2,>=1.2
+Requires-Dist: openai<2,>=1.88
+Requires-Dist: pydantic<3,>=2.12
+Requires-Dist: python-dotenv<2,>=0.21
+Requires-Dist: sympy==1.14.0
+Provides-Extra: dev
+Requires-Dist: pytest<9,>=7.4; extra == "dev"

@@ -1,0 +1,8 @@
+lark<2,>=1.2
+openai<2,>=1.88
+pydantic<3,>=2.12
+python-dotenv<2,>=0.21
+sympy==1.14.0
+
+[dev]
+pytest<9,>=7.4

@@ -25,3 +25,6 @@ __pycache__/
 .venv/
 venv/
 
+# TrigSolver transient API cache and experiment runs
+.cache/trig_solver/
+results/trig_pilot/
