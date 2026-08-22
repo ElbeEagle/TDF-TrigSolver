@@ -90,6 +90,14 @@ class SessionPaths:
     events: Path
 
 
+@dataclass(frozen=True)
+class SeedBundle:
+    seed_id: str
+    seed_kind: str
+    template_sha256: str
+    drafts: dict[str, dict[str, Any]]
+
+
 def _sha256_bytes(value: bytes) -> str:
     return hashlib.sha256(value).hexdigest()
 
@@ -186,10 +194,19 @@ def _immutable_payload(row: dict[str, Any]) -> dict[str, Any]:
 class AnnotationSession:
     """One annotator's isolated, resumable annotation state."""
 
-    def __init__(self, template_path: Path, workspace: Path, annotator_id: str):
+    def __init__(
+        self,
+        template_path: Path,
+        workspace: Path,
+        annotator_id: str,
+        seed_path: Path | None = None,
+    ):
         self.annotator_id = validate_annotator_id(annotator_id)
         self.template_path = template_path.resolve()
         self.template_rows = load_sealed_template(self.template_path)
+        self.seed_bundle = (
+            load_machine_seed(seed_path.resolve(), self.template_path, self.template_rows) if seed_path else None
+        )
         workspace_root = workspace.resolve()
         session_root = (workspace_root / self.annotator_id).resolve()
         if session_root.parent != workspace_root:
@@ -214,6 +231,8 @@ class AnnotationSession:
                     "annotation_status": "pending",
                     "independent_reviewer": None,
                     "adjudication_status": "pending",
+                    "annotation_mode": "assisted_review" if self.seed_bundle else "independent_manual",
+                    "seed_id": self.seed_bundle.seed_id if self.seed_bundle else None,
                     "notes": None,
                 }
             _atomic_write(self.paths.annotations, _jsonl_text(rows))
@@ -268,6 +287,8 @@ class AnnotationSession:
             "annotation_status": "completed",
             "independent_reviewer": None,
             "adjudication_status": "pending",
+            "annotation_mode": "assisted_review" if self.seed_bundle else "independent_manual",
+            "seed_id": self.seed_bundle.seed_id if self.seed_bundle else None,
             "notes": notes.strip() if notes and notes.strip() else None,
         }
         self.records[index] = row
@@ -290,6 +311,11 @@ class AnnotationSession:
 
     def record(self, source_id: str) -> dict[str, Any]:
         return next(row for row in self.records if row["source_id"] == source_id)
+
+    def initial_draft(self, record: dict[str, Any]) -> dict[str, Any]:
+        if self.seed_bundle is None:
+            return default_draft(record)
+        return copy.deepcopy(self.seed_bundle.drafts[record["source_id"]])
 
     def export_bytes(self) -> bytes:
         return self.paths.annotations.read_bytes()
@@ -668,3 +694,63 @@ def default_draft(record: dict[str, Any]) -> dict[str, Any]:
         "gold_option": "",
         "notes": "",
     }
+
+
+def load_machine_seed(seed_path: Path, template_path: Path, rows: list[dict[str, Any]]) -> SeedBundle:
+    """Load a complete machine-prepared Silver draft without mutating the template.
+
+    The seed is intentionally separate from the sealed blank template.  Every
+    merged draft must pass the same validation as a human-completed record
+    before the UI is allowed to start.
+    """
+
+    try:
+        payload = json.loads(seed_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise TemplateBoundaryError(f"cannot read machine Silver seed: {exc}") from exc
+    _walk_forbidden_keys(payload, "seed")
+    if payload.get("seed_kind") != "machine_prepared_silver":
+        raise TemplateBoundaryError("annotation seed must be declared machine_prepared_silver")
+    seed_id = str(payload.get("seed_id") or "").strip()
+    if not seed_id:
+        raise TemplateBoundaryError("annotation seed requires a stable seed_id")
+    template_hash = _sha256_bytes(template_path.read_bytes())
+    if payload.get("template_sha256") != template_hash:
+        raise TemplateBoundaryError("annotation seed targets a different template hash")
+    try:
+        manifest = json.loads((template_path.parent / "manifest.json").read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise TemplateBoundaryError(f"cannot verify machine Silver seed manifest: {exc}") from exc
+    expected_seed_hash = manifest.get("annotation_seed_silver_sha256")
+    if not expected_seed_hash or _sha256_bytes(seed_path.read_bytes()) != expected_seed_hash:
+        raise TemplateBoundaryError("machine Silver seed hash does not match the benchmark manifest")
+    if payload.get("gold_schema_version") != "0.2":
+        raise TemplateBoundaryError("annotation seed must use Gold schema v0.2")
+    raw_drafts = payload.get("drafts")
+    if not isinstance(raw_drafts, dict):
+        raise TemplateBoundaryError("annotation seed drafts must be an object")
+    expected_ids = {row["source_id"] for row in rows}
+    if set(raw_drafts) != expected_ids:
+        missing = sorted(expected_ids - set(raw_drafts))
+        extra = sorted(set(raw_drafts) - expected_ids)
+        raise TemplateBoundaryError(f"annotation seed ids differ from template; missing={missing}, extra={extra}")
+
+    merged_drafts: dict[str, dict[str, Any]] = {}
+    for row in rows:
+        source_id = row["source_id"]
+        override = raw_drafts[source_id]
+        if not isinstance(override, dict):
+            raise TemplateBoundaryError(f"seed draft must be an object: {source_id}")
+        merged = default_draft(row)
+        merged.update(copy.deepcopy(override))
+        try:
+            validate_draft(row, merged)
+        except (AnnotationError, ValueError) as exc:
+            raise TemplateBoundaryError(f"invalid machine Silver seed for {source_id}: {exc}") from exc
+        merged_drafts[source_id] = merged
+    return SeedBundle(
+        seed_id=seed_id,
+        seed_kind="machine_prepared_silver",
+        template_sha256=template_hash,
+        drafts=merged_drafts,
+    )

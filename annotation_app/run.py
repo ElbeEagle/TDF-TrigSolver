@@ -23,6 +23,12 @@ def main() -> int:
         type=Path,
         default=ROOT / "data" / "benchmarks" / "trig_pilot_v1" / "test_annotation_template.jsonl",
     )
+    parser.add_argument(
+        "--seed",
+        type=Path,
+        default=ROOT / "annotation_app" / "seeds" / "test_seed_v1.json",
+        help="Machine-prepared Silver seed; pass an empty value only by editing the launcher configuration",
+    )
     parser.add_argument("--workspace", type=Path, default=ROOT / "annotation_runs")
     parser.add_argument("--port", type=int, default=8501)
     args = parser.parse_args()
@@ -53,6 +59,8 @@ def main() -> int:
         str(args.template.resolve()),
         "--workspace",
         str(args.workspace.resolve()),
+        "--seed",
+        str(args.seed.resolve()),
     ]
     try:
         return subprocess.run(command, cwd=ROOT, env=environment, check=False).returncode
@@ -62,4 +70,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

@@ -3,12 +3,14 @@ import json
 from pathlib import Path
 
 import pytest
+import sympy as sp
 
 from annotation_app.core import (
     AnnotationSession,
     DraftValidationError,
     TemplateBoundaryError,
     default_draft,
+    load_machine_seed,
     load_sealed_template,
     validate_draft,
 )
@@ -16,6 +18,7 @@ from annotation_app.core import (
 
 ROOT = Path(__file__).resolve().parents[1]
 TEMPLATE = ROOT / "data" / "benchmarks" / "trig_pilot_v1" / "test_annotation_template.jsonl"
+SEED = ROOT / "annotation_app" / "seeds" / "test_seed_v1.json"
 
 
 def _record(rows: list[dict], source_id: str) -> dict:
@@ -77,6 +80,62 @@ def test_two_annotators_have_isolated_output_and_resume_state(tmp_path: Path):
     assert session_b.completed_count == 0
     assert AnnotationSession(TEMPLATE, tmp_path, "annotator_a").completed_count == 1
     assert AnnotationSession(TEMPLATE, tmp_path, "annotator_b").completed_count == 0
+
+
+def test_machine_seed_covers_and_validates_all_fifty_records():
+    rows = load_sealed_template(TEMPLATE)
+    seed = load_machine_seed(SEED, TEMPLATE, rows)
+    assert seed.seed_kind == "machine_prepared_silver"
+    assert len(seed.drafts) == 50
+    assert set(seed.drafts) == {row["source_id"] for row in rows}
+    assert all(validate_draft(row, seed.drafts[row["source_id"]]) for row in rows)
+
+
+def test_machine_seed_equation_points_satisfy_every_equation():
+    rows = load_sealed_template(TEMPLATE)
+    seed = load_machine_seed(SEED, TEMPLATE, rows)
+    equation_rows = [row for row in rows if row["task_family"] == "EQUATION"]
+    assert len(equation_rows) == 10
+    for row in equation_rows:
+        validated = validate_draft(row, seed.drafts[row["source_id"]])
+        relation = validated.oracle_urm.expressions[0].ast.to_sympy()
+        periodic = validated.gold_answer.periodic_set
+        assert isinstance(relation, sp.Equality)
+        assert periodic is not None
+        variable = sp.Symbol(periodic.variable, real=True)
+        period = periodic.period.to_sympy()
+        for point_ast in periodic.points:
+            point = point_ast.to_sympy()
+            for candidate in (point, point + period):
+                residual = sp.N((relation.lhs - relation.rhs).subs(variable, candidate), 30)
+                assert abs(complex(residual)) < 1e-12, (row["source_id"], candidate, residual)
+
+
+def test_seeded_sessions_share_no_mutable_draft_state(tmp_path: Path):
+    session_a = AnnotationSession(TEMPLATE, tmp_path, "annotator_a", SEED)
+    session_b = AnnotationSession(TEMPLATE, tmp_path, "annotator_b", SEED)
+    record_a = session_a.record("18032-test")
+    record_b = session_b.record("18032-test")
+    draft_a = session_a.initial_draft(record_a)
+    draft_b = session_b.initial_draft(record_b)
+    assert draft_a["gold_option"] == draft_b["gold_option"] == "A"
+
+    draft_a["notes"] = "annotator A private change"
+    session_a.save_draft(record_a["source_id"], draft_a)
+    assert session_b.drafts == {}
+    assert session_b.initial_draft(record_b)["notes"] == ""
+    resumed_a = AnnotationSession(TEMPLATE, tmp_path, "annotator_a", SEED)
+    assert resumed_a.drafts[record_a["source_id"]]["notes"] == "annotator A private change"
+
+
+def test_tampered_seed_is_rejected(tmp_path: Path):
+    payload = json.loads(SEED.read_text(encoding="utf-8"))
+    payload["template_sha256"] = "0" * 64
+    seed_path = tmp_path / "seed.json"
+    seed_path.write_text(json.dumps(payload), encoding="utf-8")
+    rows = load_sealed_template(TEMPLATE)
+    with pytest.raises(TemplateBoundaryError, match="hash"):
+        load_machine_seed(seed_path, TEMPLATE, rows)
 
 
 def test_interval_set_gold_is_structured():

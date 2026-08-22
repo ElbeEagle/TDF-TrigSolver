@@ -35,6 +35,7 @@ ATOMIC_SOURCE_PATHS = (
     ROOT / "data" / "CMM-Math" / "第二部分_潜在多子题_22题_全部原子化拆分_84条.jsonl",
 )
 OUTPUT_DIR = ROOT / "data" / "benchmarks" / "trig_pilot_v1"
+ANNOTATION_SEED_PATH = ROOT / "annotation_app" / "seeds" / "test_seed_v1.json"
 LOCKED_TEST_SELECTION_SHA256 = "8e778f7754c29057027328d581db8fdcc0d998e3d9510be75696eb0ec2960fb3"
 GOLD_SCHEMA_V02_SHA256 = "7f41b5d02ec4117c2cd676a06a55660d08e26d8a40c326cb7c87fda081a4ba09"
 
@@ -647,6 +648,15 @@ def main() -> int:
         "".join(json.dumps(row, ensure_ascii=False) + "\n" for row in annotation_template),
         encoding="utf-8",
     )
+    annotation_template_sha256 = hashlib.sha256(annotation_path.read_bytes()).hexdigest()
+    annotation_seed = json.loads(ANNOTATION_SEED_PATH.read_text(encoding="utf-8"))
+    if annotation_seed.get("seed_kind") != "machine_prepared_silver":
+        raise RuntimeError("annotation seed must be declared machine_prepared_silver")
+    if annotation_seed.get("template_sha256") != annotation_template_sha256:
+        raise RuntimeError("annotation seed targets a different template hash")
+    if set(annotation_seed.get("drafts") or {}) != {row["source_id"] for row in annotation_template}:
+        raise RuntimeError("annotation seed does not cover the locked 50-question template exactly")
+    annotation_seed_sha256 = hashlib.sha256(ANNOTATION_SEED_PATH.read_bytes()).hexdigest()
     gold_schema_path = OUTPUT_DIR / "gold_answer.schema.json"
     gold_schema_content = json.dumps(GoldAnswer.model_json_schema(), ensure_ascii=False, indent=2) + "\n"
     gold_schema_sha256 = _sha256_text(gold_schema_content)
@@ -671,13 +681,18 @@ def main() -> int:
         "test_selection_audit_sha256": hashlib.sha256(audit_path.read_bytes()).hexdigest(),
         "test_selection_count": len(selection),
         "test_selection_sha256": selection_sha256,
-        "test_annotation_template_sha256": hashlib.sha256(annotation_path.read_bytes()).hexdigest(),
+        "test_annotation_template_sha256": annotation_template_sha256,
+        "annotation_protocol": "assisted_double_review",
+        "annotation_seed_kind": "machine_prepared_silver",
+        "annotation_seed_id": annotation_seed["seed_id"],
+        "annotation_seed_silver_sha256": annotation_seed_sha256,
         "gold_schema_sha256": gold_schema_sha256,
         "test_sha256": None,
         "prompt_sha256": QwenRawParser.prompt_hash(),
         "freeze_blocker": (
-            "The 50 questions are selection-locked, but Oracle-URM and structured mathematical Gold "
-            "still require independent human annotation and adjudication before test.jsonl can be frozen."
+            "The 50 questions are selection-locked and have a machine-prepared Silver seed, but every "
+            "Oracle-URM and mathematical Gold still requires two isolated human reviews and adjudication "
+            "before test.jsonl can be frozen."
         ),
     }
     (OUTPUT_DIR / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

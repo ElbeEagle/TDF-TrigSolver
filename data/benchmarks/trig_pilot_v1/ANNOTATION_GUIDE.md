@@ -1,24 +1,24 @@
-# Trig Pilot v1 独立 Gold 标注与冻结规范
+# Trig Pilot v1 辅助双人 Gold 审查与冻结规范
 
 ## 1. 当前冻结边界
 
 `test_selection.jsonl` 中的 50 条题目已经锁定：五类各 10 条，每类 5 道选择题和 5 道开放题。不得根据当前求解器的正确或错误表现替换题目。`EQUATION` 的 10 条题均要求全部实数解，不得改成限制区间内求解。
 
-当前只冻结了题目选择和 Gold schema，尚未冻结测试 Gold。`manifest.json` 必须保持 `frozen=false`，直到两位人工标注者完成独立标注与裁决。
+当前只冻结了题目选择和 Gold schema，尚未冻结测试 Gold。50题已有一份 `machine_prepared_silver` 候选，但它不是人工 Gold。`manifest.json` 必须保持 `frozen=false`，直到两位人工标注者分别完成审查与裁决。
 
-## 2. 两位标注者的独立工作
+## 2. 两位标注者的隔离审查
 
-标注者 A、B 分别复制 `test_annotation_template.jsonl`，在不查看对方结果的情况下逐题完成：
+标注者 A、B 加载同一版本的空白模板和 Silver seed，在不查看对方修改结果的情况下逐题完成：
 
-1. 独立解题，判断题目是否确属给定 `task_family`；困难但在研究范围内的题不得因难度被删除。
-2. 填写完整 `oracle_urm`，只编码题面显式信息与求解目标，不写入来源答案或求解器输出。
-3. 填写结构化 `gold_answer`，禁止使用展示字符串作为 Gold。
-4. 对选择题先独立求出数学 Gold，再匹配选项并填写 `gold_option`；开放题的 `gold_option` 必须为 `null`。
+1. 独立核算题目并判断 Silver 是否正确；困难但在研究范围内的题不得因难度被删除。
+2. 审查和修改完整 `oracle_urm`，只保留题面显式信息与求解目标，不写入来源答案或求解器输出。
+3. 审查和修改结构化 `gold_answer`，禁止使用展示字符串作为 Gold。
+4. 对选择题先核对数学 Gold，再核对 `gold_option`；开放题的 `gold_option` 必须为 `null`。
 5. 填写本人姓名或稳定标识、`annotation_status=completed` 和必要说明。
 
-原始 CMM-Math 的 `answer`、`analysis` 只能在两位标注者都提交后用于裁决核验，不能代替独立解题。
+原始 CMM-Math 的 `answer`、`analysis` 仍不在页面显示，只能在两位标注者都提交后用于裁决核验。输出必须记录 `annotation_mode=assisted_review` 和 seed ID；论文中应表述为“双人隔离复核机器 Silver”，不能表述为“无先验双人独立推导”。
 
-推荐通过仓库根目录的 `annotation_app/` 完成上述步骤。A、B 必须使用不同的 `--annotator`，并分别启动自己的本地会话；页面只负责字段引导、AST 生成和结构校验，不负责判断答案在数学上是否正确。具体命令及保存位置见 `annotation_app/README.md`。
+通过仓库根目录的 `annotation_app/` 完成上述步骤。A、B 必须使用不同的 `--annotator`，并分别启动自己的本地会话；页面负责预填、字段引导、AST 生成和结构校验，不负责判断答案在数学上是否正确。具体命令及保存位置见 `annotation_app/README.md`。
 
 ## 3. Gold schema v0.2
 
@@ -59,7 +59,7 @@
 - `EQUATION` 10 条的 `GoalSpec.completeness` 全部为 `all_real`，Gold 全部为 `periodic_set`；
 - 25 条 dev 与 50 条 test 使用同一 Gold schema v0.2；
 - 选择题同时有数学 Gold 和唯一 `gold_option`；
-- 两位标注者与裁决状态完整；
+- 两位隔离人工审查者、seed 来源与裁决状态完整；
 - dev/test 不存在同源父题、规范化题干重复或公式模板泄漏；
 - 生成最终 `test.jsonl` 后写入 `test_sha256`，最后才把 `manifest.json` 的 `frozen` 改为 `true`。
 

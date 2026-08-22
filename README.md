@@ -35,16 +35,18 @@ RUN_LLM_INTEGRATION=1 .venv/bin/python -m pytest -q -m integration
 .venv/bin/python -m trig_solver.experiments.summarize --latest
 ```
 
-The 50 test questions are selection-locked, but the test command remains intentionally blocked while `manifest.json` has `frozen=false`. It must not be enabled until two humans have independently annotated and adjudicated every Oracle-URM and Gold schema v0.2 answer.
+The 50 test questions are selection-locked and now have a machine-prepared Silver seed, but the test command remains intentionally blocked while `manifest.json` has `frozen=false`. It must not be enabled until two isolated human reviewers have checked and adjudicated every Oracle-URM and Gold schema v0.2 answer.
 
 See [the implementation and experiment note](docs/trig_solver_pilot.md) and [benchmark protocol](data/benchmarks/trig_pilot_v1/README.md).
 
-## Independent Gold annotation UI
+## Assisted Gold review UI
 
 The optional local UI is kept outside `src/trig_solver/`. It loads only the
-sealed empty test template and one annotator's private session directory; it
-does not call the solver or expose source answers, model predictions, or the
-other annotator's work.
+sealed empty test template, a hash-locked machine Silver seed, and one
+annotator's private session directory. It does not call the solver or expose
+source answers, solver predictions, or the other annotator's work. The desktop
+layout keeps the question in a sticky left-hand card while the form scrolls on
+the right.
 
 ```bash
 .venv/bin/python -m pip install -e '.[annotation,dev]'

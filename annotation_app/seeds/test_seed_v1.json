@@ -1,0 +1,387 @@
+{
+  "schema_version": "1.0",
+  "seed_id": "trig_pilot_test_machine_silver_v1",
+  "seed_kind": "machine_prepared_silver",
+  "template_sha256": "e7aa5024672e637657818056aa6dde749162be2c4f12cfa12a01cca808616e24",
+  "gold_schema_version": "0.2",
+  "drafts": {
+    "18032-test": {
+      "target_latex": "\\cos 27^{\\circ}\\cos 57^{\\circ}-\\sin 27^{\\circ}\\cos 147^{\\circ}",
+      "unit": "degree",
+      "gold_expression": "\\frac{\\sqrt{3}}{2}",
+      "gold_option": "A"
+    },
+    "18046-test": {
+      "target_latex": "\\sin 165^{\\circ}",
+      "unit": "degree",
+      "gold_expression": "\\frac{\\sqrt{6}-\\sqrt{2}}{4}",
+      "gold_option": "D"
+    },
+    "18068-test": {
+      "target_latex": "\\frac{1-\\tan 27^{\\circ}\\tan 33^{\\circ}}{\\tan 27^{\\circ}+\\tan 33^{\\circ}}",
+      "unit": "degree",
+      "gold_expression": "\\frac{\\sqrt{3}}{3}",
+      "gold_option": "A"
+    },
+    "17906-test": {
+      "target_latex": "\\tan\\alpha",
+      "variable": "alpha",
+      "unit": "unspecified",
+      "quadrant": 2,
+      "constraints": "[property] unit_circle_point=(-4/5,3/5)",
+      "gold_expression": "-\\frac{3}{4}",
+      "gold_option": "D"
+    },
+    "17772-test": {
+      "target_latex": "\\tan(\\pi+\\alpha)",
+      "variable": "alpha",
+      "quadrant": 2,
+      "constraints": "\\cos(\\pi-\\alpha)=\\frac{\\sqrt{3}}{2}\n[membership] alpha=(pi/2,pi)",
+      "gold_expression": "-\\frac{\\sqrt{3}}{3}",
+      "gold_option": "D"
+    },
+    "17767-test": {
+      "target_latex": "\\frac{\\cos(-585^{\\circ})}{\\sin 495^{\\circ}+\\sin(-570^{\\circ})}",
+      "unit": "degree",
+      "gold_expression": "\\sqrt{2}-2"
+    },
+    "17788-test": {
+      "target_latex": "\\frac{\\sin(\\theta+(2k+1)\\pi)-\\sin(-\\theta-(2k+1)\\pi)}{\\sin(\\theta+2k\\pi)\\cos(\\theta-2k\\pi)}",
+      "variable": "theta",
+      "constraints": "\\theta=\\frac{5\\pi}{4}\n[membership] k=Integers",
+      "gold_expression": "2\\sqrt{2}"
+    },
+    "17789-test": {
+      "target_latex": "\\sin\\alpha\\cos\\alpha",
+      "variable": "alpha",
+      "constraints": "\\sin(3\\pi-\\alpha)=-2\\sin(\\frac{\\pi}{2}+\\alpha)",
+      "gold_expression": "-\\frac{2}{5}"
+    },
+    "3597-test": {
+      "target_latex": "\\cos 30^{\\circ}\\tan 60^{\\circ}",
+      "unit": "degree",
+      "gold_expression": "\\frac{3}{2}"
+    },
+    "17608-test": {
+      "target_latex": "\\tan 2\\alpha",
+      "variable": "alpha",
+      "constraints": "\\frac{\\sin\\alpha+\\cos\\alpha}{\\sin\\alpha-\\cos\\alpha}=\\frac{1}{2}",
+      "gold_expression": "\\frac{3}{4}"
+    },
+    "17785-test": {
+      "target_latex": "\\frac{\\cos(\\alpha+\\pi)\\sin^{2}(\\alpha+3\\pi)}{\\tan(\\alpha+4\\pi)\\tan(\\alpha-\\pi)\\sin^{3}(\\frac{\\pi}{2}+\\alpha)}",
+      "variable": "alpha",
+      "gold_expression": "-1",
+      "gold_option": "B"
+    },
+    "18257-test": {
+      "target_latex": "\\frac{\\cos^{2}5^{\\circ}-\\sin^{2}5^{\\circ}}{\\sin40^{\\circ}\\cos40^{\\circ}}",
+      "unit": "degree",
+      "gold_expression": "2",
+      "gold_option": "B"
+    },
+    "17606-test": {
+      "target_latex": "(\\sin\\frac{\\alpha}{2}+\\cos\\frac{\\alpha}{2})^{2}+2\\sin^{2}(\\frac{\\pi}{4}-\\frac{\\alpha}{2})",
+      "variable": "alpha",
+      "gold_expression": "2",
+      "gold_option": "C"
+    },
+    "17513-test": {
+      "target_latex": "\\sqrt{2-2\\cos8}+2\\sqrt{1-\\sin8}",
+      "gold_expression": "2\\cos4-4\\sin4",
+      "gold_option": "A"
+    },
+    "18085-test": {
+      "target_latex": "\\sqrt{1+\\cos100^{\\circ}}-\\sqrt{1-\\cos100^{\\circ}}",
+      "unit": "degree",
+      "gold_expression": "-2\\sin5^{\\circ}",
+      "gold_option": "C"
+    },
+    "18093-test": {
+      "target_latex": "\\sqrt{\\frac{1+\\cos(3\\pi-\\theta)}{2}}",
+      "variable": "theta",
+      "constraints": "[membership] theta=(3pi/2,2pi)",
+      "gold_expression": "\\sin\\frac{\\theta}{2}"
+    },
+    "17903-test": {
+      "target_latex": "\\frac{1}{\\cos\\alpha}\\sqrt{1+\\tan^{2}\\alpha}+\\tan\\alpha\\sqrt{\\frac{1}{\\sin^{2}\\alpha}-1}",
+      "variable": "alpha",
+      "quadrant": 4,
+      "gold_expression": "\\tan^{2}\\alpha"
+    },
+    "17357-test": {
+      "target_latex": "\\frac{\\sin\\alpha}{1-\\cos\\alpha}\\frac{\\cos\\alpha\\tan\\alpha}{1+\\cos\\alpha}",
+      "variable": "alpha",
+      "operator": "prove_identity",
+      "gold_expression": "1"
+    },
+    "17360-test": {
+      "target_latex": "\\frac{1}{\\cos^{2}\\alpha\\sqrt{1+\\tan^{2}\\alpha}}-\\sqrt{\\frac{1+\\sin\\alpha}{1-\\sin\\alpha}}",
+      "variable": "alpha",
+      "quadrant": 2,
+      "gold_expression": "\\tan\\alpha"
+    },
+    "18277-test": {
+      "target_latex": "\\sin^{2}\\alpha+\\sin^{2}\\beta-\\sin^{2}\\alpha\\sin^{2}\\beta+\\cos^{2}\\alpha\\cos^{2}\\beta",
+      "variable": "alpha",
+      "gold_expression": "1"
+    },
+    "17824-test": {
+      "target_latex": "2\\sin(2x-\\frac{\\pi}{4})",
+      "property_names": "monotonic_decreasing_interval",
+      "gold_kind": "periodic_set",
+      "period": "\\pi",
+      "periodic_variable": "x",
+      "intervals": "[\\frac{3\\pi}{8},\\frac{7\\pi}{8}]",
+      "gold_option": "A"
+    },
+    "17825-test": {
+      "target_latex": "\\sin(2x+\\varphi)",
+      "variable": "varphi",
+      "constraints": "[property] symmetry_axis=pi/8",
+      "property_names": "phase_parameter",
+      "gold_expression": "\\frac{\\pi}{4}",
+      "gold_option": "D"
+    },
+    "17817-test": {
+      "target_latex": "\\sin(2x+\\frac{5\\pi}{2})",
+      "property_names": "symmetry_center_x",
+      "gold_kind": "periodic_set",
+      "period": "\\frac{\\pi}{2}",
+      "periodic_variable": "x",
+      "points": "\\frac{\\pi}{4}",
+      "gold_option": "B"
+    },
+    "17843-test": {
+      "target_latex": "\\sin(x-\\frac{\\pi}{3})",
+      "property_names": "horizontal_shift_right",
+      "gold_expression": "\\frac{\\pi}{3}",
+      "gold_option": "D"
+    },
+    "17549-test": {
+      "target_latex": "\\sin(\\omega x+\\frac{\\pi}{6})-1",
+      "variable": "x",
+      "constraints": "[property] omega_positive=true\n[property] function_period=2pi/3",
+      "property_names": "symmetry_axis",
+      "gold_kind": "periodic_set",
+      "period": "\\frac{\\pi}{3}",
+      "periodic_variable": "x",
+      "points": "\\frac{\\pi}{9}",
+      "gold_option": "C"
+    },
+    "17864-test": {
+      "target_latex": "-2\\sin(2x+\\varphi)",
+      "variable": "x",
+      "constraints": "[membership] phi=(-pi,pi)\n[property] f(pi/8)=-2",
+      "property_names": "monotonic_decreasing_interval",
+      "gold_kind": "periodic_set",
+      "period": "\\pi",
+      "periodic_variable": "x",
+      "intervals": "[0,\\frac{\\pi}{8}]\n[\\frac{5\\pi}{8},\\pi)"
+    },
+    "17863-test": {
+      "target_latex": "\\omega",
+      "variable": "omega",
+      "constraints": "[property] omega_positive_integer=true\n[property] decreasing_interval=(pi/2,pi)",
+      "property_names": "frequency_parameter",
+      "gold_expression": "1"
+    },
+    "18109-test": {
+      "target_latex": "\\cos(x+\\theta)",
+      "variable": "x",
+      "constraints": "[membership] theta=(0,pi)\n[property] minimum_at=pi/3\n[membership] x=[0,pi]",
+      "property_names": "restricted_monotonic_increasing_interval",
+      "gold_kind": "set",
+      "set_kind": "interval",
+      "set_primary": "[\\frac{\\pi}{3},\\pi]"
+    },
+    "17638-test": {
+      "target_latex": "\\omega",
+      "variable": "omega",
+      "constraints": "[membership] omega=(0,2)\n[property] increasing_interval=[0,pi/3]\n[property] decreasing_interval=[pi/3,pi/2]",
+      "property_names": "frequency_parameter",
+      "gold_kind": "expression",
+      "gold_expression": "\\frac{3}{2}"
+    },
+    "1742002-test": {
+      "target_latex": "\\left|\\sin\\frac{x}{2}\\right|",
+      "property_names": "minimum_positive_period",
+      "gold_expression": "2\\pi"
+    },
+    "17774-test": {
+      "target_latex": "\\sin(\\pi+x)=-\\sqrt{3}\\cos(2\\pi-x)",
+      "variable": "x",
+      "gold_kind": "periodic_set",
+      "period": "\\pi",
+      "periodic_variable": "x",
+      "points": "\\frac{\\pi}{3}",
+      "gold_option": "A"
+    },
+    "17756-test": {
+      "target_latex": "\\sin x=2\\cos x",
+      "variable": "x",
+      "gold_kind": "periodic_set",
+      "period": "\\pi",
+      "periodic_variable": "x",
+      "points": "\\arctan 2",
+      "gold_option": "A"
+    },
+    "18078-test": {
+      "target_latex": "\\tan x+\\frac{1}{\\tan x}=4",
+      "variable": "x",
+      "gold_kind": "periodic_set",
+      "period": "\\pi",
+      "periodic_variable": "x",
+      "points": "\\frac{\\pi}{12}\n\\frac{5\\pi}{12}",
+      "gold_option": "A"
+    },
+    "17524-test": {
+      "target_latex": "\\sin^{2}x+\\cos 2x=\\frac{1}{4}",
+      "variable": "x",
+      "gold_kind": "periodic_set",
+      "period": "\\pi",
+      "periodic_variable": "x",
+      "points": "\\frac{\\pi}{3}\n\\frac{2\\pi}{3}",
+      "gold_option": "A"
+    },
+    "18084-test": {
+      "target_latex": "\\sin 2x=\\frac{2}{3}",
+      "variable": "x",
+      "gold_kind": "periodic_set",
+      "period": "\\pi",
+      "periodic_variable": "x",
+      "points": "\\frac{1}{2}\\arcsin\\frac{2}{3}\n\\frac{\\pi}{2}-\\frac{1}{2}\\arcsin\\frac{2}{3}",
+      "gold_option": "A"
+    },
+    "17758-test": {
+      "target_latex": "\\sin x-\\cos x=\\frac{4}{3}",
+      "variable": "x",
+      "gold_kind": "periodic_set",
+      "period": "2\\pi",
+      "periodic_variable": "x",
+      "points": "\\frac{\\pi}{4}+\\arcsin\\frac{2\\sqrt{2}}{3}\n\\frac{5\\pi}{4}-\\arcsin\\frac{2\\sqrt{2}}{3}"
+    },
+    "17765-test": {
+      "target_latex": "\\sin(\\pi-x)-\\cos(-x)=\\frac{1}{2}",
+      "variable": "x",
+      "gold_kind": "periodic_set",
+      "period": "2\\pi",
+      "periodic_variable": "x",
+      "points": "\\frac{\\pi}{4}+\\arcsin\\frac{\\sqrt{2}}{4}\n\\frac{5\\pi}{4}-\\arcsin\\frac{\\sqrt{2}}{4}"
+    },
+    "18048-test": {
+      "target_latex": "\\cos(x-\\frac{\\pi}{6})=\\frac{1}{3}",
+      "variable": "x",
+      "gold_kind": "periodic_set",
+      "period": "2\\pi",
+      "periodic_variable": "x",
+      "points": "\\frac{\\pi}{6}+\\arccos\\frac{1}{3}\n\\frac{13\\pi}{6}-\\arccos\\frac{1}{3}"
+    },
+    "18394-test": {
+      "target_latex": "\\sin x\\cos x=\\frac{1}{8}",
+      "variable": "x",
+      "gold_kind": "periodic_set",
+      "period": "\\pi",
+      "periodic_variable": "x",
+      "points": "\\frac{1}{2}\\arcsin\\frac{1}{4}\n\\frac{\\pi}{2}-\\frac{1}{2}\\arcsin\\frac{1}{4}"
+    },
+    "18091-test": {
+      "target_latex": "\\sin(x+\\frac{\\pi}{4})=-\\frac{5}{13}",
+      "variable": "x",
+      "gold_kind": "periodic_set",
+      "period": "2\\pi",
+      "periodic_variable": "x",
+      "points": "\\frac{3\\pi}{4}+\\arcsin\\frac{5}{13}\n\\frac{7\\pi}{4}-\\arcsin\\frac{5}{13}"
+    },
+    "17743-test": {
+      "target_latex": "\\tan(2x-\\frac{\\pi}{4})",
+      "operator": "domain",
+      "gold_kind": "periodic_set",
+      "period": "\\frac{\\pi}{2}",
+      "periodic_variable": "x",
+      "full_period": true,
+      "excluded_points": "\\frac{3\\pi}{8}",
+      "gold_option": "A"
+    },
+    "18056-test": {
+      "target_latex": "m",
+      "variable": "m",
+      "constraints": "\\sqrt{3}\\sin x+\\cos x=4-m",
+      "operator": "range",
+      "gold_kind": "set",
+      "set_kind": "interval",
+      "set_primary": "[2,6]",
+      "gold_option": "A"
+    },
+    "3606-test": {
+      "target_latex": "\\alpha",
+      "variable": "alpha",
+      "unit": "degree",
+      "constraints": "\\frac{1}{2}<\\cos\\alpha\n\\cos\\alpha<\\sin80^{\\circ}\n[property] alpha_is_acute=true",
+      "operator": "solve_inequality",
+      "gold_kind": "set",
+      "set_kind": "interval",
+      "set_primary": "(\\frac{\\pi}{18},\\frac{\\pi}{3})",
+      "gold_option": "D"
+    },
+    "17464-test": {
+      "target_latex": "\\left|\\sin x\\right|+\\sin x",
+      "operator": "range",
+      "gold_kind": "set",
+      "set_kind": "interval",
+      "set_primary": "[0,2]",
+      "gold_option": "D"
+    },
+    "18195-test": {
+      "target_latex": "\\sqrt{2\\cos x+1}",
+      "operator": "domain",
+      "gold_kind": "periodic_set",
+      "period": "2\\pi",
+      "periodic_variable": "x",
+      "intervals": "[0,\\frac{2\\pi}{3}]\n[\\frac{4\\pi}{3},2\\pi)",
+      "gold_option": "D"
+    },
+    "17745-test": {
+      "target_latex": "\\sin\\theta",
+      "variable": "theta",
+      "constraints": "[membership] theta=(pi/2,5pi/4)",
+      "operator": "range",
+      "gold_kind": "set",
+      "set_kind": "interval",
+      "set_primary": "(-\\frac{\\sqrt{2}}{2},1)"
+    },
+    "17297-test": {
+      "target_latex": "\\cos\\theta>\\sin\\frac{7\\pi}{3}",
+      "variable": "theta",
+      "operator": "solve_inequality",
+      "gold_kind": "periodic_set",
+      "period": "2\\pi",
+      "periodic_variable": "theta",
+      "intervals": "[0,\\frac{\\pi}{6})\n(\\frac{11\\pi}{6},2\\pi)"
+    },
+    "17833-test": {
+      "target_latex": "\\tan^{2}x-2\\tan x",
+      "constraints": "[membership] x=[-pi/3,pi/3]",
+      "operator": "range",
+      "gold_kind": "set",
+      "set_kind": "interval",
+      "set_primary": "[-1,3+2\\sqrt{3}]"
+    },
+    "17901-test": {
+      "target_latex": "\\frac{\\left|\\sin x\\right|}{\\sin x}+\\frac{\\left|\\cos x\\right|}{\\cos x}-\\frac{2\\left|\\sin x\\cos x\\right|}{\\sin x\\cos x}",
+      "constraints": "[property] original_denominators_nonzero=true",
+      "operator": "range",
+      "gold_kind": "set",
+      "set_kind": "finite",
+      "set_primary": "-4\n0\n2"
+    },
+    "17617-test": {
+      "target_latex": "\\cos^{2}x-2\\sin x+1",
+      "constraints": "[membership] x=[-pi/2,pi/6]",
+      "operator": "range",
+      "gold_kind": "set",
+      "set_kind": "interval",
+      "set_primary": "[\\frac{3}{4},3]"
+    }
+  }
+}

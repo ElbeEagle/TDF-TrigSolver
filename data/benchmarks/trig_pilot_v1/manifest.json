@@ -18,8 +18,12 @@
   "test_selection_count": 50,
   "test_selection_sha256": "8e778f7754c29057027328d581db8fdcc0d998e3d9510be75696eb0ec2960fb3",
   "test_annotation_template_sha256": "e7aa5024672e637657818056aa6dde749162be2c4f12cfa12a01cca808616e24",
+  "annotation_protocol": "assisted_double_review",
+  "annotation_seed_kind": "machine_prepared_silver",
+  "annotation_seed_id": "trig_pilot_test_machine_silver_v1",
+  "annotation_seed_silver_sha256": "27ce318435945af99699400b5c575d70ceab369eff3451f8d3bd37a99189c635",
   "gold_schema_sha256": "7f41b5d02ec4117c2cd676a06a55660d08e26d8a40c326cb7c87fda081a4ba09",
   "test_sha256": null,
   "prompt_sha256": "5dcab25a5c85fc640e53c77b9a3beee5da02a4792a17bec978bd450d59010f75",
-  "freeze_blocker": "The 50 questions are selection-locked, but Oracle-URM and structured mathematical Gold still require independent human annotation and adjudication before test.jsonl can be frozen."
+  "freeze_blocker": "The 50 questions are selection-locked and have a machine-prepared Silver seed, but every Oracle-URM and mathematical Gold still requires two isolated human reviews and adjudication before test.jsonl can be frozen."
 }

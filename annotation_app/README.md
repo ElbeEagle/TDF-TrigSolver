@@ -1,6 +1,6 @@
-# Trig Gold 轻量标注页面
+# Trig Gold 轻量辅助审查页面
 
-这是一个与 `src/trig_solver/` 分离的本地 Streamlit MVP。它只执行输入隔离、字段引导、AST 生成和结构校验，不调用求解器，也不判断数学结论是否正确。
+这是一个与 `src/trig_solver/` 分离的本地 Streamlit MVP。页面加载逐题准备的 `machine_prepared_silver`，让两位人工标注者分别审查和修改 Oracle-URM、数学 Gold 与选择题选项。它不调用求解器，也不能保证 Silver 的数学结论正确。
 
 ## 1. 安装
 
@@ -26,29 +26,33 @@
 
 然后分别打开 `http://127.0.0.1:8501` 和 `http://127.0.0.1:8502`。启动器固定监听本机地址，并关闭 Streamlit 使用统计。
 
-若两人共用同一台电脑，应使用各自的浏览器会话，并且不得浏览对方目录。若需要更强的访问控制，应让两人各自在自己的系统账号或电脑上运行。当前 MVP 的“隔离”是应用数据路径隔离，不是操作系统级权限沙箱。
+两人可以在不同电脑或不同操作系统上运行，只需使用相同仓库版本和 seed 哈希。若共用同一台电脑，应使用各自的浏览器会话，并且不得浏览对方目录。当前 MVP 的“隔离”是应用数据路径隔离，不是操作系统级权限沙箱。
 
 ## 3. 页面边界
 
-页面仅加载 `test_annotation_template.jsonl`，并在启动时执行以下检查：
+页面只加载空白 `test_annotation_template.jsonl`、版本化 Silver seed 和当前标注者目录，并在启动时执行以下检查：
 
 - 模板 SHA-256 必须与相邻 `manifest.json` 一致；
 - 必须恰好包含 50 条唯一题目；
 - `oracle_urm`、`gold_answer`、`gold_option` 必须为空；
 - 不得含 `answer`、`analysis`、`solution`、求解器输出或模型预测字段；
+- seed 必须声明为 `machine_prepared_silver`，自身哈希和目标模板哈希必须与 manifest 一致；
+- seed 必须覆盖恰好50题，且每题都能通过正式的 AST、集合和周期结构校验；
 - 当前会话只能读写 `<workspace>/<annotator_id>/`。
 
 页面显示题干、选项和锁定元数据；不会读取原始 CMM-Math 答案、另一位标注者文件或任何 solver prediction。
 
 ## 4. 标注流程
 
-1. 独立完成数学推导。
-2. 在 Oracle-URM 区填写目标公式、主变量、操作、角制、象限、显式约束和性质名称。不要把最终答案写入 Oracle-URM。
-3. 在 Gold 区选择 `expression`、`set` 或 `periodic_set`，填写人工推导出的数学答案。
-4. 选择题最后填写 `gold_option`；开放题会强制保存为 `null`。
+1. 独立核算题目，不把预填 Silver 当作正确答案。
+2. 审查 Oracle-URM 的目标公式、主变量、操作、角制、象限、显式约束和性质名称；错误项直接修改。
+3. 审查 `expression`、`set` 或 `periodic_set` 中预填的数学 Gold，重点检查端点、周期、基本点、排除点和主值。
+4. 选择题在确认数学 Gold 后核对 `gold_option`；开放题会强制保存为 `null`。
 5. 检查“实时结构校验”生成的规范 JSON。只有显示结构有效后，才能保存为 completed。
 
-“结构有效”只表示数据符合 schema，例如 AST 节点合法、周期点位于 `[0,T)`；不表示答案算对了。页面不会化简、证明或替标注者选择答案。
+“结构有效”只表示数据符合 schema，例如 AST 节点合法、周期点位于 `[0,T)`；不表示 Silver 或修改后的答案算对了。最终输出会记录 `annotation_mode=assisted_review` 和 seed ID，不能将该流程描述成无先验的双人独立推导。
+
+桌面页面采用左侧 sticky 题目卡片、右侧审查表单。滚动右侧内容时题干和选项保持可见；窄屏下题目卡片限制为视口高度的38%，内部可滚动。
 
 常用输入格式：
 
@@ -85,4 +89,4 @@ annotation_runs/<annotator_id>/
 .venv/bin/python -m pytest -q
 ```
 
-测试覆盖冻结输入边界、敏感字段拒绝、双标注员路径隔离、恢复状态、普通集合、完整周期解及选择/开放题约束。
+测试覆盖冻结输入边界、Silver/模板哈希、50题 seed 完整性、双标注员路径隔离、已有草稿保护、普通集合、完整周期解及选择/开放题约束。
