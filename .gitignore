@@ -28,3 +28,6 @@ venv/
 # TrigSolver transient API cache and experiment runs
 .cache/trig_solver/
 results/trig_pilot/
+
+# Private, per-annotator Gold drafts and exports
+/annotation_runs/

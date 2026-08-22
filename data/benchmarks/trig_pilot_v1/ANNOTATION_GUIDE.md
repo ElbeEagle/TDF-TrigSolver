@@ -18,6 +18,8 @@
 
 原始 CMM-Math 的 `answer`、`analysis` 只能在两位标注者都提交后用于裁决核验，不能代替独立解题。
 
+推荐通过仓库根目录的 `annotation_app/` 完成上述步骤。A、B 必须使用不同的 `--annotator`，并分别启动自己的本地会话；页面只负责字段引导、AST 生成和结构校验，不负责判断答案在数学上是否正确。具体命令及保存位置见 `annotation_app/README.md`。
+
 ## 3. Gold schema v0.2
 
 每条 `gold_answer` 必须且只能属于以下一种：

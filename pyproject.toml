@@ -17,6 +17,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+annotation = ["streamlit>=1.40,<2"]
 dev = ["pytest>=7.4,<9"]
 
 [project.scripts]

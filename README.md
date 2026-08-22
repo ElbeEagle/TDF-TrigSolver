@@ -38,3 +38,19 @@ RUN_LLM_INTEGRATION=1 .venv/bin/python -m pytest -q -m integration
 The 50 test questions are selection-locked, but the test command remains intentionally blocked while `manifest.json` has `frozen=false`. It must not be enabled until two humans have independently annotated and adjudicated every Oracle-URM and Gold schema v0.2 answer.
 
 See [the implementation and experiment note](docs/trig_solver_pilot.md) and [benchmark protocol](data/benchmarks/trig_pilot_v1/README.md).
+
+## Independent Gold annotation UI
+
+The optional local UI is kept outside `src/trig_solver/`. It loads only the
+sealed empty test template and one annotator's private session directory; it
+does not call the solver or expose source answers, model predictions, or the
+other annotator's work.
+
+```bash
+.venv/bin/python -m pip install -e '.[annotation,dev]'
+.venv/bin/python annotation_app/run.py --annotator annotator_a --port 8501
+```
+
+Open `http://127.0.0.1:8501`. See
+[the annotation UI guide](annotation_app/README.md) for the two-annotator setup,
+field conventions, and output files.
