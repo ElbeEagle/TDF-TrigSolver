@@ -16,6 +16,9 @@ docs/algorithm/
 *.swp
 *.swo
 
+# Origin data
+data-origin/
+
 # Python
 __pycache__/
 *.py[cod]
