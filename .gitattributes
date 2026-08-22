@@ -1,0 +1,4 @@
+# Keep integrity-bound annotation artifacts byte-stable across operating systems.
+/data/benchmarks/trig_pilot_v1/*.json text eol=lf
+/data/benchmarks/trig_pilot_v1/*.jsonl text eol=lf
+/annotation_app/seeds/*.json text eol=lf

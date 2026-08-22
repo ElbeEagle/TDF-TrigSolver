@@ -68,6 +68,18 @@ def _sha256_text(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
 
 
+def _portable_text_sha256(value: bytes) -> str:
+    normalized = value.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    return hashlib.sha256(normalized).hexdigest()
+
+
+def _write_text_lf(path: Path, content: str) -> None:
+    """Write deterministic UTF-8 text without OS-specific newline conversion."""
+
+    with path.open("w", encoding="utf-8", newline="\n") as handle:
+        handle.write(content)
+
+
 def _expression(expr: sp.Basic, identifier: str = "E1") -> ExpressionSpec:
     return ExpressionSpec(id=identifier, source_latex=sp.latex(expr), ast=ExprAST.from_sympy(expr))
 
@@ -601,14 +613,14 @@ def main() -> int:
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     dev = build_dev()
     dev_path = OUTPUT_DIR / "dev.jsonl"
-    dev_path.write_text("".join(json.dumps(row, ensure_ascii=False) + "\n" for row in dev), encoding="utf-8")
+    _write_text_lf(dev_path, "".join(json.dumps(row, ensure_ascii=False) + "\n" for row in dev))
     specs = test_selection_specs()
     candidates = build_test_candidates(dev, specs)
     candidates_path = OUTPUT_DIR / "test_candidates.jsonl"
-    candidates_path.write_text("".join(json.dumps(row, ensure_ascii=False) + "\n" for row in candidates), encoding="utf-8")
+    _write_text_lf(candidates_path, "".join(json.dumps(row, ensure_ascii=False) + "\n" for row in candidates))
     audit = build_selection_audit(candidates, specs)
     audit_path = OUTPUT_DIR / "test_selection_audit.jsonl"
-    audit_path.write_text("".join(json.dumps(row, ensure_ascii=False) + "\n" for row in audit), encoding="utf-8")
+    _write_text_lf(audit_path, "".join(json.dumps(row, ensure_ascii=False) + "\n" for row in audit))
     selection = build_test_selection(specs)
     dev_templates = {row["template_group"] for row in dev}
     test_templates = {row["template_group"] for row in selection}
@@ -625,7 +637,7 @@ def main() -> int:
     selection_sha256 = _sha256_text(selection_content)
     if selection_sha256 != LOCKED_TEST_SELECTION_SHA256:
         raise RuntimeError("test selection differs from the locked 50-question composition")
-    selection_path.write_text(selection_content, encoding="utf-8")
+    _write_text_lf(selection_path, selection_content)
     annotation_template = [
         {
             **row,
@@ -644,11 +656,11 @@ def main() -> int:
         for row in selection
     ]
     annotation_path = OUTPUT_DIR / "test_annotation_template.jsonl"
-    annotation_path.write_text(
+    _write_text_lf(
+        annotation_path,
         "".join(json.dumps(row, ensure_ascii=False) + "\n" for row in annotation_template),
-        encoding="utf-8",
     )
-    annotation_template_sha256 = hashlib.sha256(annotation_path.read_bytes()).hexdigest()
+    annotation_template_sha256 = _portable_text_sha256(annotation_path.read_bytes())
     annotation_seed = json.loads(ANNOTATION_SEED_PATH.read_text(encoding="utf-8"))
     if annotation_seed.get("seed_kind") != "machine_prepared_silver":
         raise RuntimeError("annotation seed must be declared machine_prepared_silver")
@@ -656,13 +668,13 @@ def main() -> int:
         raise RuntimeError("annotation seed targets a different template hash")
     if set(annotation_seed.get("drafts") or {}) != {row["source_id"] for row in annotation_template}:
         raise RuntimeError("annotation seed does not cover the locked 50-question template exactly")
-    annotation_seed_sha256 = hashlib.sha256(ANNOTATION_SEED_PATH.read_bytes()).hexdigest()
+    annotation_seed_sha256 = _portable_text_sha256(ANNOTATION_SEED_PATH.read_bytes())
     gold_schema_path = OUTPUT_DIR / "gold_answer.schema.json"
     gold_schema_content = json.dumps(GoldAnswer.model_json_schema(), ensure_ascii=False, indent=2) + "\n"
     gold_schema_sha256 = _sha256_text(gold_schema_content)
     if gold_schema_sha256 != GOLD_SCHEMA_V02_SHA256:
         raise RuntimeError("GoldAnswer JSON schema differs from frozen v0.2")
-    gold_schema_path.write_text(gold_schema_content, encoding="utf-8")
+    _write_text_lf(gold_schema_path, gold_schema_content)
     manifest = {
         "schema_version": "0.2",
         "gold_schema_version": "0.2",
@@ -695,7 +707,7 @@ def main() -> int:
             "before test.jsonl can be frozen."
         ),
     }
-    (OUTPUT_DIR / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    _write_text_lf(OUTPUT_DIR / "manifest.json", json.dumps(manifest, ensure_ascii=False, indent=2) + "\n")
     print(json.dumps(manifest, ensure_ascii=False, indent=2))
     return 0
 

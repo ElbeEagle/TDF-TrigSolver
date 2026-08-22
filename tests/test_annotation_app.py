@@ -18,11 +18,16 @@ from annotation_app.core import (
 
 ROOT = Path(__file__).resolve().parents[1]
 TEMPLATE = ROOT / "data" / "benchmarks" / "trig_pilot_v1" / "test_annotation_template.jsonl"
+MANIFEST = ROOT / "data" / "benchmarks" / "trig_pilot_v1" / "manifest.json"
 SEED = ROOT / "annotation_app" / "seeds" / "test_seed_v1.json"
 
 
 def _record(rows: list[dict], source_id: str) -> dict:
     return next(row for row in rows if row["source_id"] == source_id)
+
+
+def _with_crlf(value: bytes) -> bytes:
+    return value.replace(b"\r\n", b"\n").replace(b"\n", b"\r\n")
 
 
 def test_sealed_template_contains_no_prefilled_or_forbidden_fields():
@@ -31,6 +36,32 @@ def test_sealed_template_contains_no_prefilled_or_forbidden_fields():
     assert all(row["oracle_urm"] is None for row in rows)
     assert all(row["gold_answer"] is None for row in rows)
     assert all(row["gold_option"] is None for row in rows)
+
+
+def test_seeded_annotation_session_accepts_windows_crlf_checkout(tmp_path: Path):
+    benchmark_dir = tmp_path / "benchmark"
+    benchmark_dir.mkdir()
+    template = benchmark_dir / TEMPLATE.name
+    manifest = benchmark_dir / MANIFEST.name
+    seed = tmp_path / SEED.name
+    template.write_bytes(_with_crlf(TEMPLATE.read_bytes()))
+    manifest.write_bytes(_with_crlf(MANIFEST.read_bytes()))
+    seed.write_bytes(_with_crlf(SEED.read_bytes()))
+
+    session = AnnotationSession(template, tmp_path / "runs", "annotator_a", seed)
+
+    assert len(session.template_rows) == 50
+    assert session.seed_bundle is not None
+    assert len(session.seed_bundle.drafts) == 50
+
+
+def test_crlf_normalization_does_not_hide_other_template_changes(tmp_path: Path):
+    template = tmp_path / TEMPLATE.name
+    template.write_bytes(_with_crlf(TEMPLATE.read_bytes()) + b" ")
+    (tmp_path / MANIFEST.name).write_bytes(_with_crlf(MANIFEST.read_bytes()))
+
+    with pytest.raises(TemplateBoundaryError, match="template hash"):
+        load_sealed_template(template)
 
 
 def test_template_rejects_hidden_source_analysis_even_with_matching_hash(tmp_path: Path):

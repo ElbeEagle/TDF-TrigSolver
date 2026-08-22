@@ -102,6 +102,17 @@ def _sha256_bytes(value: bytes) -> str:
     return hashlib.sha256(value).hexdigest()
 
 
+def portable_text_sha256(value: bytes) -> str:
+    """Hash versioned text after normalizing platform line endings to LF.
+
+    Git may check out the same JSON/JSONL artifact with CRLF on Windows.  Only
+    line endings are canonicalized; every other byte remains integrity-bound.
+    """
+
+    normalized = value.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    return _sha256_bytes(normalized)
+
+
 def _read_jsonl(path: Path) -> list[dict[str, Any]]:
     try:
         return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
@@ -158,7 +169,7 @@ def load_sealed_template(path: Path) -> list[dict[str, Any]]:
     except (OSError, json.JSONDecodeError) as exc:
         raise TemplateBoundaryError(f"cannot read benchmark manifest: {exc}") from exc
     expected_hash = manifest.get("test_annotation_template_sha256")
-    actual_hash = _sha256_bytes(path.read_bytes())
+    actual_hash = portable_text_sha256(path.read_bytes())
     if not expected_hash or actual_hash != expected_hash:
         raise TemplateBoundaryError("annotation template hash does not match the frozen manifest")
     rows = _read_jsonl(path)
@@ -714,7 +725,7 @@ def load_machine_seed(seed_path: Path, template_path: Path, rows: list[dict[str,
     seed_id = str(payload.get("seed_id") or "").strip()
     if not seed_id:
         raise TemplateBoundaryError("annotation seed requires a stable seed_id")
-    template_hash = _sha256_bytes(template_path.read_bytes())
+    template_hash = portable_text_sha256(template_path.read_bytes())
     if payload.get("template_sha256") != template_hash:
         raise TemplateBoundaryError("annotation seed targets a different template hash")
     try:
@@ -722,7 +733,7 @@ def load_machine_seed(seed_path: Path, template_path: Path, rows: list[dict[str,
     except (OSError, json.JSONDecodeError) as exc:
         raise TemplateBoundaryError(f"cannot verify machine Silver seed manifest: {exc}") from exc
     expected_seed_hash = manifest.get("annotation_seed_silver_sha256")
-    if not expected_seed_hash or _sha256_bytes(seed_path.read_bytes()) != expected_seed_hash:
+    if not expected_seed_hash or portable_text_sha256(seed_path.read_bytes()) != expected_seed_hash:
         raise TemplateBoundaryError("machine Silver seed hash does not match the benchmark manifest")
     if payload.get("gold_schema_version") != "0.2":
         raise TemplateBoundaryError("annotation seed must use Gold schema v0.2")
