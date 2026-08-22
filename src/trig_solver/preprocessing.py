@@ -28,6 +28,9 @@ OPTION_PATTERN = re.compile(r"(?m)(?:^|\n)\s*([A-Da-d])\s*[\.、．·]\s*")
 UNSUPPORTED_LATEX = re.compile(r"\\(?:includegraphics|begin\s*\{array\}|overset|underset|not\b)")
 ALLOWED_LATEX_COMMANDS = {
     "alpha",
+    "arccos",
+    "arcsin",
+    "arctan",
     "abs",
     "beta",
     "cdot",
@@ -167,4 +170,3 @@ def preprocess_problem(problem: RawProblem) -> PreprocessedProblem:
         expressions=expressions,
         needs_image=needs_image,
     )
-    "beta",

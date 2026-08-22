@@ -1,4 +1,5 @@
 from pathlib import Path
+import json
 
 import pytest
 
@@ -22,3 +23,17 @@ def test_development_benchmark_balance():
 def test_unfrozen_test_split_cannot_run():
     with pytest.raises(RuntimeError, match="not frozen"):
         run_experiment("test", "oracle", "full", False)
+
+
+def test_locked_test_selection_balance_and_equation_completeness():
+    path = BENCHMARK_DIR / "test_selection.jsonl"
+    rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+    assert len(rows) == 50
+    assert all(row["selection_review"]["solver_prediction_consulted"] is False for row in rows)
+    for family in TaskFamily:
+        family_rows = [row for row in rows if row["task_family"] == family]
+        assert len(family_rows) == 10
+        assert sum(row["output_format"] == "multiple_choice" for row in family_rows) == 5
+    equation_rows = [row for row in rows if row["task_family"] == TaskFamily.EQUATION]
+    assert all("全部实数解" in row["problem"]["question"] for row in equation_rows)
+    assert all(row["gold_review"]["status"] == "pending_independent_human_annotation" for row in rows)

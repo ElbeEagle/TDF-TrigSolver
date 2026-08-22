@@ -8,7 +8,7 @@ from typing import Any
 import sympy as sp
 
 from .cas import CASExecutor, CASTimeout, CASUnsolved
-from .models import PeriodicSet
+from .models import GoldAnswer, PeriodicSet, SetSpec, SolveResult
 from .preprocessing import FormulaParseError, extract_formula_strings, parse_latex_ast
 
 
@@ -20,6 +20,86 @@ def symbolic_equal(left: sp.Basic, right: sp.Basic) -> bool:
         return cas.run("trigsimp", cas.run("simplify", left - right)) == 0
     except (CASTimeout, CASUnsolved, TypeError, ValueError, NotImplementedError):
         return False
+
+
+def set_equal(left: SetSpec, right: SetSpec) -> bool:
+    try:
+        left_set = left.to_sympy()
+        right_set = right.to_sympy()
+        return left_set == right_set or sp.simplify(left_set.symmetric_difference(right_set)) == sp.EmptySet
+    except (TypeError, ValueError, NotImplementedError):
+        return False
+
+
+def _common_period(left: sp.Basic, right: sp.Basic) -> sp.Basic | None:
+    ratio = sp.simplify(right / left)
+    if not isinstance(ratio, sp.Rational) or ratio <= 0:
+        return None
+    return sp.simplify(left * ratio.p)
+
+
+def _periodic_base_set(periodic: PeriodicSet, common_period: sp.Basic) -> sp.Set:
+    period = sp.simplify(periodic.period.to_sympy())
+    ratio = sp.simplify(common_period / period)
+    if not isinstance(ratio, sp.Integer) or ratio <= 0:
+        raise ValueError("periods are not commensurate")
+    window = sp.Interval.Ropen(0, common_period)
+    included: sp.Set = window if periodic.full_period else sp.EmptySet
+    shifts = range(-1, int(ratio) + 1)
+    if not periodic.full_period:
+        for shift in shifts:
+            offset = shift * period
+            for point in periodic.points:
+                included = sp.Union(included, sp.FiniteSet(point.to_sympy() + offset))
+            for interval in periodic.intervals:
+                included = sp.Union(
+                    included,
+                    sp.Interval(
+                        interval.start.to_sympy() + offset,
+                        interval.end.to_sympy() + offset,
+                        left_open=interval.left_open,
+                        right_open=interval.right_open,
+                    ),
+                )
+        included = sp.Intersection(included, window)
+    excluded: sp.Set = sp.EmptySet
+    for shift in shifts:
+        offset = shift * period
+        for point in periodic.excluded_points:
+            excluded = sp.Union(excluded, sp.FiniteSet(point.to_sympy() + offset))
+    return sp.Complement(included, sp.Intersection(excluded, window))
+
+
+def periodic_equal(left: PeriodicSet, right: PeriodicSet) -> bool:
+    left_period = sp.simplify(left.period.to_sympy())
+    right_period = sp.simplify(right.period.to_sympy())
+    common = _common_period(left_period, right_period)
+    if common is None:
+        return False
+    try:
+        left_set = _periodic_base_set(left, common)
+        right_set = _periodic_base_set(right, common)
+        return left_set == right_set or sp.simplify(left_set.symmetric_difference(right_set)) == sp.EmptySet
+    except (TypeError, ValueError, NotImplementedError):
+        return False
+
+
+def result_matches_gold(result: SolveResult, gold: GoldAnswer) -> bool:
+    if result.status != "solved":
+        return False
+    if gold.kind == "expression":
+        return (
+            result.expression is not None
+            and gold.expression is not None
+            and symbolic_equal(result.expression.to_sympy(), gold.expression.to_sympy())
+        )
+    if gold.kind == "set":
+        return result.set_value is not None and gold.set_value is not None and set_equal(result.set_value, gold.set_value)
+    return (
+        result.periodic_set is not None
+        and gold.periodic_set is not None
+        and periodic_equal(result.periodic_set, gold.periodic_set)
+    )
 
 
 def render_value(value: Any) -> str:

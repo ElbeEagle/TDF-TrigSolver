@@ -35,6 +35,6 @@ RUN_LLM_INTEGRATION=1 .venv/bin/python -m pytest -q -m integration
 .venv/bin/python -m trig_solver.experiments.summarize --latest
 ```
 
-The test command is intentionally blocked while `manifest.json` has `frozen=false`. It must not be enabled until 50 records have independently reviewed Oracle-URM and structured gold annotations.
+The 50 test questions are selection-locked, but the test command remains intentionally blocked while `manifest.json` has `frozen=false`. It must not be enabled until two humans have independently annotated and adjudicated every Oracle-URM and Gold schema v0.2 answer.
 
 See [the implementation and experiment note](docs/trig_solver_pilot.md) and [benchmark protocol](data/benchmarks/trig_pilot_v1/README.md).

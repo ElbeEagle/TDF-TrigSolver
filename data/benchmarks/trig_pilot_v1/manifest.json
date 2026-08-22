@@ -1,12 +1,25 @@
 {
-  "schema_version": "0.1",
+  "schema_version": "0.2",
+  "gold_schema_version": "0.2",
   "frozen": false,
+  "selection_frozen": true,
   "source_path": "data/CMM-Math/data.jsonl",
+  "allowed_source_files": [
+    "data/CMM-Math/data.jsonl",
+    "data/CMM-Math/明确多子题_118题_全部拆分_合并版.jsonl",
+    "data/CMM-Math/第二部分_潜在多子题_22题_全部原子化拆分_84条.jsonl"
+  ],
   "source_sha256": "4a3b7c103b97676f0624143ae89140663ee1276bf365c27f1f4cce0bd531c0a5",
   "dev_count": 25,
-  "dev_sha256": "981dc38db6910a5dbb6d160883fada31ba71578684d88af1f3554fd4cd6f6fdc",
-  "test_candidate_count": 50,
+  "dev_sha256": "8a470771d84b6f4509801e7bbf3fe090c25b4cb0e4601a7ceeece3e9d2dbb2b9",
+  "test_candidate_count": 150,
+  "test_candidate_sha256": "9cfc6a172d617542d53df113be6b84caf68e93abaa339b34a8091cf8fa343b4f",
+  "test_selection_audit_sha256": "b5945d6f8be46592a6aa01dd384777ff71bef1467f1ab305d44ddc627cc84c90",
+  "test_selection_count": 50,
+  "test_selection_sha256": "8e778f7754c29057027328d581db8fdcc0d998e3d9510be75696eb0ec2960fb3",
+  "test_annotation_template_sha256": "e7aa5024672e637657818056aa6dde749162be2c4f12cfa12a01cca808616e24",
+  "gold_schema_sha256": "7f41b5d02ec4117c2cd676a06a55660d08e26d8a40c326cb7c87fda081a4ba09",
   "test_sha256": null,
   "prompt_sha256": "5dcab25a5c85fc640e53c77b9a3beee5da02a4792a17bec978bd450d59010f75",
-  "freeze_blocker": "50 records require Oracle-URM/gold annotation and independent second-person review"
+  "freeze_blocker": "The 50 questions are selection-locked, but Oracle-URM and structured mathematical Gold still require independent human annotation and adjudication before test.jsonl can be frozen."
 }

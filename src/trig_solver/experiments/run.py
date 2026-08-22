@@ -17,10 +17,21 @@ from pydantic import BaseModel, Field
 import sympy as sp
 
 from ..cas import CASExecutor, CASTimeout, CASUnsolved
-from ..models import AbstainCode, RawProblem, SolveResult, SolverConfig, TaskFamily, TraceStep, TrigURM
+from ..models import (
+    AbstainCode,
+    ExprAST,
+    GoldAnswer,
+    RawProblem,
+    SetSpec,
+    SolveResult,
+    SolverConfig,
+    TaskFamily,
+    TraceStep,
+    TrigURM,
+)
 from ..pipeline import solve_oracle, solve_raw
 from ..qwen import QwenRawParser
-from ..validator import match_options, render_value
+from ..validator import match_options, render_value, result_matches_gold
 
 
 class ReviewState(BaseModel):
@@ -28,11 +39,6 @@ class ReviewState(BaseModel):
     annotator: str | None = None
     independent_reviewer: str | None = None
     adjudication_note: str | None = None
-
-
-class GoldAnswer(BaseModel):
-    kind: str
-    canonical: str
 
 
 class BenchmarkRecord(BaseModel):
@@ -117,14 +123,12 @@ def check_frozen(root: Path, split: str, data_path: Path, records: list[Benchmar
         raise RuntimeError(f"test has {len(pending)} records without independent review")
 
 
-def _correct(result: Any, record: BenchmarkRecord) -> bool:
-    if result.status != "solved":
+def _correct(result: SolveResult, record: BenchmarkRecord, *, require_option: bool = True) -> bool:
+    if result.status != "solved" or record.gold_answer is None:
         return False
-    if record.gold_option:
-        return result.option == record.gold_option
-    if record.gold_answer is not None:
-        return result.answer == record.gold_answer.canonical
-    return False
+    if not result_matches_gold(result, record.gold_answer):
+        return False
+    return not (require_option and record.gold_option) or result.option == record.gold_option
 
 
 def _modes(requested: str) -> Iterable[str]:
@@ -165,6 +169,8 @@ def _cas_only(record: BenchmarkRecord, config: SolverConfig) -> SolveResult:
             answer_kind="cas_result",
             answer=answer,
             value=answer,
+            expression=None if isinstance(value, sp.Set) else ExprAST.from_sympy(value) if isinstance(value, sp.Basic) else None,
+            set_value=SetSpec.from_sympy(value) if isinstance(value, sp.Set) else None,
             option=option,
             trace=[
                 TraceStep(
@@ -219,7 +225,7 @@ def run_experiment(split: str, mode: str, variant: str, freeze_check: bool) -> t
                     "mode": current_mode,
                     "variant": variant,
                     "task_family": record.task_family,
-                    "correct": _correct(result, record),
+                    "correct": _correct(result, record, require_option=variant != "no-validator"),
                     "gold_option": record.gold_option,
                     "gold_answer": record.gold_answer.model_dump(mode="json") if record.gold_answer else None,
                     "latency_seconds": latency_seconds,

@@ -43,6 +43,9 @@ ALLOWED_AST_OPS = {
     "sin",
     "cos",
     "tan",
+    "asin",
+    "acos",
+    "atan",
     "abs",
     "eq",
     "lt",
@@ -77,6 +80,9 @@ class ExprAST(BaseModel):
             "sin": 1,
             "cos": 1,
             "tan": 1,
+            "asin": 1,
+            "acos": 1,
+            "atan": 1,
             "abs": 1,
             "eq": 2,
             "lt": 2,
@@ -116,6 +122,9 @@ class ExprAST(BaseModel):
             "sin": sp.sin,
             "cos": sp.cos,
             "tan": sp.tan,
+            "asin": sp.asin,
+            "acos": sp.acos,
+            "atan": sp.atan,
             "abs": sp.Abs,
             "eq": sp.Eq,
             "lt": sp.StrictLessThan,
@@ -144,6 +153,9 @@ class ExprAST(BaseModel):
             sp.sin: "sin",
             sp.cos: "cos",
             sp.tan: "tan",
+            sp.asin: "asin",
+            sp.acos: "acos",
+            sp.atan: "atan",
             sp.Abs: "abs",
             sp.Equality: "eq",
             sp.StrictLessThan: "lt",
@@ -223,7 +235,104 @@ class PeriodicSet(BaseModel):
     points: list[ExprAST] = Field(default_factory=list)
     intervals: list[IntervalCell] = Field(default_factory=list)
     excluded_points: list[ExprAST] = Field(default_factory=list)
+    full_period: bool = False
     variable: str = "x"
+
+
+class SetSpec(BaseModel):
+    """Structured one-dimensional real set used by frozen gold labels."""
+
+    kind: Literal["empty", "reals", "finite", "interval", "union", "difference"]
+    elements: list[ExprAST] = Field(default_factory=list)
+    start: ExprAST | None = None
+    end: ExprAST | None = None
+    left_open: bool = False
+    right_open: bool = False
+    children: list["SetSpec"] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def validate_shape(self) -> "SetSpec":
+        if self.kind == "finite" and not self.elements:
+            raise ValueError("finite set requires at least one element")
+        if self.kind == "interval" and self.start is None and not self.left_open:
+            raise ValueError("an interval unbounded below must be left-open")
+        if self.kind == "interval" and self.end is None and not self.right_open:
+            raise ValueError("an interval unbounded above must be right-open")
+        if self.kind == "union" and len(self.children) < 2:
+            raise ValueError("union requires at least two child sets")
+        if self.kind == "difference" and len(self.children) != 2:
+            raise ValueError("difference requires exactly two child sets")
+        return self
+
+    def to_sympy(self) -> sp.Set:
+        if self.kind == "empty":
+            return sp.EmptySet
+        if self.kind == "reals":
+            return sp.S.Reals
+        if self.kind == "finite":
+            return sp.FiniteSet(*(item.to_sympy() for item in self.elements))
+        if self.kind == "interval":
+            start = -sp.oo if self.start is None else self.start.to_sympy()
+            end = sp.oo if self.end is None else self.end.to_sympy()
+            return sp.Interval(start, end, left_open=self.left_open, right_open=self.right_open)
+        children = [item.to_sympy() for item in self.children]
+        if self.kind == "union":
+            return sp.Union(*children)
+        return sp.Complement(children[0], children[1])
+
+    @classmethod
+    def from_sympy(cls, value: sp.Set) -> "SetSpec":
+        if value == sp.EmptySet:
+            return cls(kind="empty")
+        if value == sp.S.Reals:
+            return cls(kind="reals")
+        if isinstance(value, sp.FiniteSet):
+            return cls(kind="finite", elements=[ExprAST.from_sympy(item) for item in sorted(value, key=sp.default_sort_key)])
+        if isinstance(value, sp.Interval):
+            return cls(
+                kind="interval",
+                start=None if value.start == sp.S.NegativeInfinity else ExprAST.from_sympy(value.start),
+                end=None if value.end == sp.S.Infinity else ExprAST.from_sympy(value.end),
+                left_open=bool(value.left_open),
+                right_open=bool(value.right_open),
+            )
+        if isinstance(value, sp.Union):
+            return cls(kind="union", children=[cls.from_sympy(item) for item in value.args])
+        if isinstance(value, sp.Complement):
+            return cls(kind="difference", children=[cls.from_sympy(item) for item in value.args])
+        raise ValueError(f"unsupported set node: {type(value).__name__}")
+
+
+class GoldAnswer(BaseModel):
+    """Discriminated mathematical gold; never a presentation string."""
+
+    kind: Literal["expression", "set", "periodic_set"]
+    expression: ExprAST | None = None
+    set_value: SetSpec | None = None
+    periodic_set: PeriodicSet | None = None
+
+    @model_validator(mode="after")
+    def validate_payload(self) -> "GoldAnswer":
+        payloads = {
+            "expression": self.expression,
+            "set": self.set_value,
+            "periodic_set": self.periodic_set,
+        }
+        if payloads[self.kind] is None:
+            raise ValueError(f"{self.kind} gold requires its matching payload")
+        if sum(value is not None for value in payloads.values()) != 1:
+            raise ValueError("gold answer must contain exactly one mathematical payload")
+        return self
+
+    @classmethod
+    def from_value(cls, value: Any) -> "GoldAnswer":
+        if isinstance(value, PeriodicSet):
+            return cls(kind="periodic_set", periodic_set=value)
+        if isinstance(value, sp.Set):
+            return cls(kind="set", set_value=SetSpec.from_sympy(value))
+        if isinstance(value, sp.Basic):
+            return cls(kind="expression", expression=ExprAST.from_sympy(value))
+        raise ValueError(f"unsupported gold value: {type(value).__name__}")
 
 
 class TraceStep(BaseModel):
@@ -242,6 +351,8 @@ class SolveResult(BaseModel):
     answer: str | None = None
     option: str | None = None
     value: Any = None
+    expression: ExprAST | None = None
+    set_value: SetSpec | None = None
     periodic_set: PeriodicSet | None = None
     trace: list[TraceStep] = Field(default_factory=list)
     abstain_code: AbstainCode | None = None

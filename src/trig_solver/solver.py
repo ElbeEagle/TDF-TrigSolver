@@ -16,6 +16,7 @@ from .models import (
     ExprAST,
     IntervalCell,
     PeriodicSet,
+    SetSpec,
     SolveResult,
     SolverConfig,
     TaskFamily,
@@ -643,12 +644,20 @@ class DISSolver:
             if self.config.enable_validator and not state.validated:
                 raise TMMFailure(AbstainCode.VALIDATION_NO_MATCH, "result was not validated")
             answer = render_periodic(state.periodic_set) if state.periodic_set else render_value(state.value)
+            expression = None
+            set_value = None
+            if state.periodic_set is None and isinstance(state.value, sp.Set):
+                set_value = SetSpec.from_sympy(state.value)
+            elif state.periodic_set is None and isinstance(state.value, sp.Basic):
+                expression = ExprAST.from_sympy(state.value)
             return SolveResult(
                 status="solved",
                 answer_kind=state.answer_kind,
                 answer=answer,
                 option=state.option,
                 value=None if state.periodic_set else answer,
+                expression=expression,
+                set_value=set_value,
                 periodic_set=state.periodic_set,
                 trace=state.trace,
                 metadata={key: str(value) for key, value in state.metadata.items() if key != "base_periodic_set"},

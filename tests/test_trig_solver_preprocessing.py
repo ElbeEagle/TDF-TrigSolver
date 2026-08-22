@@ -19,6 +19,11 @@ def test_latex_parser_handles_affine_sinusoid_and_degrees():
     assert sp.trigsimp(degree - sp.Rational(1, 2)) == 0
 
 
+def test_latex_parser_handles_inverse_trigonometric_constants():
+    parsed = parse_latex_ast(r"\frac{1}{2}\arcsin\frac{2}{3}").to_sympy()
+    assert parsed == sp.asin(sp.Rational(2, 3)) / 2
+
+
 def test_incomplete_formula_is_rejected():
     with pytest.raises(FormulaParseError):
         parse_latex_ast(r"\sin x +")

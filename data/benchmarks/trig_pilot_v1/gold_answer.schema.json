@@ -1,0 +1,227 @@
+{
+  "$defs": {
+    "ExprAST": {
+      "description": "Small, executable expression tree with no general evaluation surface.",
+      "properties": {
+        "op": {
+          "title": "Op",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        },
+        "args": {
+          "items": {
+            "$ref": "#/$defs/ExprAST"
+          },
+          "title": "Args",
+          "type": "array"
+        }
+      },
+      "required": [
+        "op"
+      ],
+      "title": "ExprAST",
+      "type": "object"
+    },
+    "IntervalCell": {
+      "properties": {
+        "start": {
+          "$ref": "#/$defs/ExprAST"
+        },
+        "end": {
+          "$ref": "#/$defs/ExprAST"
+        },
+        "left_open": {
+          "default": false,
+          "title": "Left Open",
+          "type": "boolean"
+        },
+        "right_open": {
+          "default": false,
+          "title": "Right Open",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "start",
+        "end"
+      ],
+      "title": "IntervalCell",
+      "type": "object"
+    },
+    "PeriodicSet": {
+      "properties": {
+        "period": {
+          "$ref": "#/$defs/ExprAST"
+        },
+        "points": {
+          "items": {
+            "$ref": "#/$defs/ExprAST"
+          },
+          "title": "Points",
+          "type": "array"
+        },
+        "intervals": {
+          "items": {
+            "$ref": "#/$defs/IntervalCell"
+          },
+          "title": "Intervals",
+          "type": "array"
+        },
+        "excluded_points": {
+          "items": {
+            "$ref": "#/$defs/ExprAST"
+          },
+          "title": "Excluded Points",
+          "type": "array"
+        },
+        "full_period": {
+          "default": false,
+          "title": "Full Period",
+          "type": "boolean"
+        },
+        "variable": {
+          "default": "x",
+          "title": "Variable",
+          "type": "string"
+        }
+      },
+      "required": [
+        "period"
+      ],
+      "title": "PeriodicSet",
+      "type": "object"
+    },
+    "SetSpec": {
+      "description": "Structured one-dimensional real set used by frozen gold labels.",
+      "properties": {
+        "kind": {
+          "enum": [
+            "empty",
+            "reals",
+            "finite",
+            "interval",
+            "union",
+            "difference"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "elements": {
+          "items": {
+            "$ref": "#/$defs/ExprAST"
+          },
+          "title": "Elements",
+          "type": "array"
+        },
+        "start": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExprAST"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "end": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExprAST"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "left_open": {
+          "default": false,
+          "title": "Left Open",
+          "type": "boolean"
+        },
+        "right_open": {
+          "default": false,
+          "title": "Right Open",
+          "type": "boolean"
+        },
+        "children": {
+          "items": {
+            "$ref": "#/$defs/SetSpec"
+          },
+          "title": "Children",
+          "type": "array"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "title": "SetSpec",
+      "type": "object"
+    }
+  },
+  "description": "Discriminated mathematical gold; never a presentation string.",
+  "properties": {
+    "kind": {
+      "enum": [
+        "expression",
+        "set",
+        "periodic_set"
+      ],
+      "title": "Kind",
+      "type": "string"
+    },
+    "expression": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ExprAST"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "set_value": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/SetSpec"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "periodic_set": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/PeriodicSet"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "kind"
+  ],
+  "title": "GoldAnswer",
+  "type": "object"
+}
