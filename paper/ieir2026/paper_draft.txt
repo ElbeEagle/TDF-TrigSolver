@@ -1,292 +1,268 @@
-\title{Trigonometric Function Problem Solving Based on Periodicity-Aware Symbolic Reasoning}
+\title{A Meta-Model-Guided Symbolic Reasoning Method for Solving Trigonometric Function Problems}
 
 \begin{abstract}
-Trigonometric function problems require more than local expression evaluation because their solutions depend on angle conventions, identity-preserving transformations, interval constraints, and periodic completeness. Existing large language models can generate plausible solution steps but do not guarantee equivalence or branch coverage, whereas computer algebra systems operate reliably on formal expressions but do not by themselves preserve the problem-level semantics needed to construct complete answers. This paper presents TrigSolver, a symbolic reasoning framework that treats periodicity as a first-class problem structure. TrigSolver first maps a text-based problem into a periodicity-aware Trigonometric Uniform Representation Model (Trig-URM), which jointly represents function objects, angle states, expressions, constraints, solving goals, and derived facts. It then applies a Trigonometric Meta-Model (TMM)-guided Decoupled Inference Strategy (DIS) to coordinate identity transformation, interval-constrained solving, base-period analysis, periodic completion, and exact answer validation. We evaluate TrigSolver on five families of trigonometric function problems under complementary Raw and Oracle settings. The Raw setting measures end-to-end performance from problem text, while the Oracle setting isolates symbolic reasoning from semantic mapping. TrigSolver achieves an overall accuracy of \textit{TBD} in the Raw setting and \textit{TBD} in the Oracle setting, outperforming direct language-model, generic language-model--CAS, and CAS-only baselines. Ablation and capability analyses further show that explicit periodic representation and TMM-guided inference are necessary for preserving interval boundaries, solution branches, and complete periodic sets. These results establish a unified and verifiable approach to symbolic reasoning over text-based trigonometric function problems.
+Reliable trigonometric function problem solving requires more than local calculation because a correct answer may depend on angle conventions, equivalence conditions, valid branches, domain restrictions, and periodic completeness. Formal systems, large language models, and computer algebra systems can perform individual trigonometric operations, but they do not jointly control when an operation is applicable, how it changes the reasoning state, or whether a local result satisfies the requested global answer. We formulate Trigonometric Meta-Models (TMMs) as bounded symbolic actions and develop a TMM-guided Decoupled Inference Strategy (DIS) that dynamically composes validated state transitions from an understood state. The method coordinates angle and expression normalization, equivalence-preserving transformation, constraint and branch reasoning, and periodic completion and validation. We evaluate it on a frozen 50-problem text benchmark against Direct LLM and LLM + generic CAS baselines, with targeted ablations of periodic completion and exact validation. The full method solves \textit{[EVIDENCE NEEDED: correct/50 and percentage]}, while \textit{[EVIDENCE NEEDED: principal comparison and ablation effect]}. These results support a bounded, inspectable symbolic reasoning process for representative text-based trigonometric function problems.
 \end{abstract}
 
 \begin{IEEEkeywords}
-trigonometric function problem solving, trigonometric function representation, symbolic reasoning, decoupled inference strategy, trigonometric identity transformation, periodic solution sets
+trigonometric function problem solving, symbolic reasoning, Trigonometric Meta-Model, decoupled inference strategy, periodic solution set
 \end{IEEEkeywords}
 
 \section{Introduction}
 \label{sec:introduction}
 
-Automatic mathematical problem solving is an important foundation for intelligent education, where a solver must produce not only a final answer but also a mathematically valid and inspectable reasoning process. Trigonometric function problems form a particularly demanding class of such tasks. Their surface forms range from exact-value evaluation and function-property analysis to identity transformation, equations, inequalities, and domain or range determination. Despite this diversity, these problems share a structural requirement: the solver must reason about angles, domains, branches, and periodicity while maintaining equivalence across multiple symbolic transformations. A locally plausible result is therefore insufficient when it omits a branch, violates an interval constraint, or reports only the solutions from one period.
+Automatic mathematical problem solving is an important component of intelligent education because a useful solver must produce answers that are mathematically valid and open to inspection. Direct trigonometric function problems are a demanding setting for this requirement. A problem may ask for an exact value, an equivalent expression, a function property, or a set of solutions; in each case, the solver must retain the mathematical conditions under which its intermediate transformations remain valid. An answer can therefore be locally plausible yet globally wrong: it may use an inconsistent angle convention, lose a domain restriction, omit a valid branch, or report the result from one period when the problem asks for all real solutions. Reliable solving requires a controlled symbolic process rather than an isolated calculation.
 
-Current solution paradigms address only parts of this requirement. Large language models have demonstrated broad mathematical coverage and can translate informal statements into fluent solution steps, but their generated derivations may contain invalid identity transformations, unsupported assumptions, or incomplete solution families. Computer algebra systems provide exact primitives for simplification, equation solving, and set manipulation, yet they expect already formalized expressions and may return results that are not aligned with the angle convention, target interval, or answer contract stated in a problem. Task-specific trigonometric systems provide stronger control in narrow settings such as identity proving or formal expression reduction, but they do not offer a common state for the wider range of text-based trigonometric tasks. Simply connecting a language model to a computer algebra system does not resolve this limitation because the pipeline still lacks an explicit representation of problem semantics and a reasoning policy for periodic completion.
+Four recurring requirements characterize this process. First, angles and expressions must be normalized into compatible forms without erasing their units, variables, or stated conditions. Second, identity transformations must preserve equivalence over the active domain rather than merely yield a visually simpler expression. Third, equation, inequality, and property reasoning must retain all valid branches, interval endpoints, and excluded points. Fourth, a result obtained in a base period must be completed and validated against the requested answer domain. These requirements interact: an equivalence-preserving transformation may expose the branches needed for interval reasoning, whereas an incomplete branch set makes subsequent periodic lifting invalid. Treating periodicity as a final textual suffix cannot repair an earlier loss of conditions or branches.
 
-The central premise of this work is that periodicity should be represented and reasoned over as a first-class structure rather than appended to a locally computed answer. Based on this premise, we propose TrigSolver, a framework that combines a periodicity-aware representation with structure-guided symbolic inference. Its Trigonometric Uniform Representation Model (Trig-URM) encodes a problem as a six-component state containing function objects, angle states, expressions, constraints, a solving goal, and derived facts. This state retains information that is easily lost in a flat expression, including angle units, principal intervals, domain exclusions, base periods, endpoint openness, and the required completeness of the output.
+Existing approaches address parts of this chain. Trigonometric proof and reduction systems provide controlled transformations in restricted formal languages, while large language models offer broad coverage and fluent problem interpretation. Computer algebra systems supply exact simplification, solving, and set operations. However, formal systems typically target one operation, free-form language-model reasoning does not guarantee symbolic validity, and generic computer algebra assumes that a suitable formal query has already been constructed. Connecting a language model to a CAS improves tool access but does not by itself specify operation prerequisites, state effects, completion conditions, or acceptance criteria. The remaining gap is therefore not the absence of individual operators; it is the absence of a domain-specific control process that composes bounded operators according to the current mathematical state and unsatisfied goal.
 
-TrigSolver operates on Trig-URM through TMM-guided decoupled inference. Each Trigonometric Meta-Model (TMM) encapsulates a mathematically bounded operation together with its structural prerequisites, state update, and local validation condition. The Decoupled Inference Strategy (DIS) inspects the current Trig-URM state, constructs a goal-compatible route through the TMM library, invokes controlled symbolic execution, and accepts a transition only after validation. This separation allows the same procedural layer to coordinate different trigonometric operations without reducing the problem to unconstrained CAS calls. In particular, identity transformation, interval-constrained solving, and complete periodic solution-set construction become successive state transitions within one reasoning process.
-
-The contributions of this paper are threefold. First, we introduce Trig-URM, a periodicity-aware uniform representation for five families of trigonometric function problems and their heterogeneous answer forms. Second, we develop TMM-guided DIS, which separates procedural control from trigonometric operations while integrating exact transformation, interval reasoning, periodic completion, and answer validation. Third, we establish a factorized evaluation protocol with Raw and Oracle tracks, task-specific metrics, component ablations, and verified reasoning traces. The resulting evidence shows not only whether TrigSolver solves a problem, but also whether its gains arise from semantic representation, symbolic inference, or periodic completeness control.
+This paper addresses that gap through Trigonometric Meta-Models (TMMs) and a TMM-guided Decoupled Inference Strategy (DIS), as outlined in Fig.~\ref{fig:reasoning_overview}. A lightweight supporting process converts the raw text into an understood state containing the explicit expressions, angle conditions, constraints, and solving goal. The reasoning contribution begins from this state. First, we formulate each TMM as a reusable symbolic action that associates structural prerequisites with an operation, a state update, and a local validation condition. Second, we develop a dynamic DIS that retrieves applicable TMMs, explores validated state transitions under a bounded search policy, and returns either a verified answer or an explicit abstention. Third, we evaluate the complete method on a frozen 50-problem pilot benchmark against Direct LLM and LLM + generic CAS baselines, and examine periodic completion and exact validation through targeted ablations. The five common problem categories are used only to stratify this evaluation, not to define five independent solvers.
 
 \section{Related Work}
 \label{sec:related_work}
 
-\subsection{Trigonometric Symbolic Reasoning}
+\subsection{Formal Trigonometric Reasoning}
 
-Research dedicated to trigonometric reasoning has mainly focused on restricted formal tasks. AutoTrig formulates identity proving as a search over normalized trigonometric expressions and transformation rules, demonstrating the value of a bounded action space for generating short proofs \cite{liu2022autotrig}. TRIGO evaluates generative models on trigonometric proof reduction in Lean and emphasizes step-level formal verification \cite{xiong2023trigo}. SSC-CoT and TriMaster100 instead investigate stepwise consistency for language-model reasoning over complex trigonometric problems \cite{zhao2024ssccot}. These studies provide useful mechanisms for rule search, formal checking, and process-level evaluation. However, identity proving or expression reduction does not cover the problem-level semantics required for function properties, interval constraints, equations, inequalities, and complete periodic solution sets. TrigSolver extends beyond a single formal operation by representing these structures in a shared state and coordinating their execution through goal-conditioned inference.
+Research dedicated to trigonometric reasoning has largely examined restricted formal tasks. AutoTrig searches over normalized expressions and transformation rules for identity proving \cite{liu2022autotrig}, while TRIGO studies generative proof reduction with step-level verification in Lean \cite{xiong2023trigo}. Process-oriented benchmarks such as SSC-CoT and TriMaster100 further examine the consistency of language-model derivations on complex trigonometric problems \cite{zhao2024ssccot}. These studies establish the value of bounded rules and verifiable steps. Their central tasks, however, do not jointly cover property derivation, interval constraints, multiple equation branches, and complete periodic answer contracts. The present work retains bounded symbolic actions but studies how heterogeneous actions can be composed within one problem-level reasoning process.
 
-\subsection{Language Models and Computer Algebra for Mathematical Solving}
+\subsection{Language Models and Computer Algebra}
 
-Large language models and multimodal models are increasingly evaluated on broad mathematical benchmarks such as MATH, MathVista, MathVerse, CMM-Math, and UGMathBench \cite{hendrycks2021math,lu2024mathvista,zhang2024mathverse,liu2024cmmmath,xu2025ugmathbench}. Their generality is useful for interpreting heterogeneous problem statements, but aggregate benchmark performance does not establish reliable handling of trigonometric equivalence, singularities, or infinite solution families. Chain-of-thought and self-consistency methods improve generated reasoning at the sequence level, although they do not intrinsically enforce symbolic validity or set completeness.
-
-Computer algebra systems complement language models with exact operations such as trigonometric simplification, equation solving, continuous-domain analysis, and symbolic set construction \cite{meurer2017sympy}. Nevertheless, a computer algebra result is only as appropriate as the formal query supplied to it. A generic CAS does not decide which problem constraints are implicit, whether a one-period result must be lifted to all real solutions, or whether a transformed expression remains equivalent on the original domain. Neuro-symbolic pipelines that connect language models and symbolic tools partially address calculation reliability, but without a task-specific intermediate state and an explicit inference controller, they remain vulnerable to incorrect tool selection and incomplete answers. TrigSolver uses a language model only for grounded semantic mapping and places mathematical decision making in the Trig-URM, TMM, and validation layers.
+Broad mathematical benchmarks, including MATH, MathVista, MathVerse, CMM-Math, and UGMathBench, show the increasing scope of language and multimodal models \cite{hendrycks2021math,lu2024mathvista,zhang2024mathverse,liu2024cmmmath,xu2025ugmathbench}. Generated reasoning is useful for interpreting heterogeneous statements, but sequence plausibility does not guarantee trigonometric equivalence, branch coverage, or set completeness. Computer algebra systems complement language models with exact simplification, equation solving, domain analysis, and symbolic sets \cite{meurer2017sympy}. Nevertheless, a CAS result is conditioned on its input query and may represent only a principal branch or base-period result. Language-model--CAS pipelines therefore remain incomplete when tool selection, domain preservation, periodic lifting, and final acceptance are left implicit.
 
 \subsection{Structured Function Problem Solving}
 
-Relation-centric approaches to text-diagram function problems represent extracted mathematical relations before symbolic solving, thereby separating problem understanding from equation execution \cite{yu2022func-relation}. Subsequent work on uniform representation and decoupled inference further suggests that diverse function types can share a procedural layer while retaining type-specific meta-models \cite{yu2026udfsolver}. Trigonometric functions, however, introduce structures that are not adequately captured by representations designed for elementary algebraic functions. Their values and solution sets depend on angle normalization, principal branches, periodic equivalence, singular points, and repeated interval units. This work specializes and extends the structured function-solving paradigm through a periodicity-aware representation and a TMM library whose transitions explicitly construct and verify complete periodic sets.
+Relation-centric algorithms for text-diagram function problems separate problem understanding from symbolic solving by first acquiring an understood state from the input \cite{yu2022func-relation}. Subsequent TDF research formalizes uniform states, function meta-models, and a Decoupled Inference Strategy that separates procedural control from function-specific execution \cite{yu2026udfsolver}. We adopt the established understood-state interface and the general decoupling principle rather than claiming them as new concepts. This paper specializes the reasoning layer for trigonometric functions: its TMMs encode angle, equivalence, branch, and periodic prerequisites, while its DIS dynamically explores validated transitions and checks global answer completeness.
 
-\section{Task Formulation}
-\label{sec:task_formulation}
+\section{Problem Formulation}
+\label{sec:problem_formulation}
 
-Let a text-based trigonometric function problem be denoted by
+Let a raw text-based trigonometric function problem be
 \begin{equation}
-    x=(t,\mathcal{O}),
+    P=(t,\mathcal{O}),
 \end{equation}
-where $t$ is the problem statement and $\mathcal{O}$ is an optional set of answer choices. The solver must return
+where $t$ is the problem statement and $\mathcal{O}$ is an optional set of answer choices. The solver returns
 \begin{equation}
-    y=(a,\mathcal{S},\mathcal{H},z),
+    Y=(a,\mathcal{S},\mathcal{H},z),
 \end{equation}
-where $a$ is a scalar, property value, symbolic expression, or selected option; $\mathcal{S}$ is an ordinary or periodic set when the target requires set-valued output; $\mathcal{H}$ is a validated sequence of symbolic transitions; and $z$ is either \texttt{solved} or an explicit abstention status with a stable reason. For a multiple-choice problem, the solver must first construct the mathematical answer and then match it to an equivalent option. Direct prediction of an option label is excluded from the task definition.
+where $a$ is a scalar, property value, exact expression, or selected option; $\mathcal{S}$ is an ordinary or periodic set when set-valued output is required; $\mathcal{H}$ is a sequence of validated symbolic transitions; and $z$ records either \texttt{solved} or an explicit abstention reason. For multiple-choice input, the solver first constructs a mathematical answer and only then matches it to an equivalent option. Direct option-label prediction is excluded.
 
-The study covers five problem families, summarized in Table~\ref{tab:task_families}. These families share a common input modality but differ in their central symbolic operation and output contract. Exact evaluation and identity transformation typically produce scalar or expression-valued answers, whereas function-property, equation, domain, range, and inequality problems may require interval unions or infinite periodic sets.
+The study concerns direct trigonometric function problems whose principal mathematical objects are trigonometric functions or expressions. The core scope is text-based, single-target input with expressions and answers that admit exact symbolic validation. Triangle-dominant geometry, visual graph interpretation, arbitrary transcendental systems, parameterized root counting, and proofs outside the supported identity language are excluded. Accordingly, the method makes no completeness claim beyond its expression grammar, TMM library, and answer contracts.
 
-\begin{table*}[t]
-\centering
-\caption{Problem families, principal operations, and output contracts considered in this study.}
-\label{tab:task_families}
-\begin{tabular}{p{0.19\textwidth}p{0.48\textwidth}p{0.23\textwidth}}
-\toprule
-Family & Principal operation & Output contract \\
-\midrule
-\texttt{EVAL} & Exact evaluation using special angles, induced-angle identities, quadrant signs, and stated constraints & Scalar or exact expression \\
-\texttt{IDENTITY} & Simplification, equivalence-preserving transformation, or identity verification & Equivalent expression or proof status \\
-\texttt{SINUSOID\_PROPERTY} & Derivation of period, amplitude, phase, monotonicity, symmetry, extrema, or range & Scalar, interval set, or periodic set \\
-\texttt{EQUATION} & Construction of all branches of a trigonometric equation and their periodic extension & Complete periodic solution set \\
-\texttt{DOMAIN\_RANGE\_INEQUALITY} & Domain and range analysis or interval-constrained trigonometric inequality solving & Ordinary or periodic interval set \\
-\bottomrule
-\end{tabular}
-\end{table*}
+\noindent\textbf{Definition 1 (Understood state).}
+An intermediate state $U^{(0)}$ is an \textit{understood state} of $P$ when it contains the executable expressions, angle conditions, explicit constraints, variable domains, and solving goal required for the symbolic solver to proceed without revisiting $t$. Each element of $U^{(0)}$ must be grounded in the raw problem, and the goal must specify the requested mathematical object and its domain of validity. This definition treats $U^{(0)}$ as the inherited interface between problem understanding and symbolic reasoning; it does not introduce a new representation model.
 
-The task focuses on direct trigonometric function reasoning. Problems whose primary object is a triangle or a geometric measurement, with trigonometric ratios used only as auxiliary tools, are outside the principal scope. The core evaluation further restricts the input to text-based, single-target problems whose mathematical expressions and answers admit exact symbolic validation. Diagram parsing, arbitrary transcendental equations, parameterized root counting, and formal theorem proving beyond the supported identity language are not included in the main claim.
+To form this interface, formula preprocessing first normalizes notation and assigns stable references to mathematical expressions. Constrained semantic mapping then extracts only the variables, angle conditions, explicit constraints, target references, and goal stated in $P$, producing a candidate state $\widehat U^{(0)}$. Reference, schema, and grounding checks verify that every extracted item resolves to the input and that the state is operationally sufficient. A candidate that contains an unsupported expression, an ungrounded target, or an ambiguous goal is rejected with a stable abstention reason. This supporting process neither performs a trigonometric derivation nor predicts the final answer.
 
-\section{Method}
+The evaluation is stratified by five common goals: exact expression evaluation, identity transformation, sinusoidal-function property derivation, trigonometric equation solving, and domain/range/inequality reasoning. These strata include scalar, exact-expression, ordinary-set, and periodic-set answers. They describe the composition of the benchmark and the reporting of results; the method itself is organized by reusable symbolic operations rather than category-specific pipelines.
+
+\section{Meta-Model-Guided Symbolic Reasoning}
 \label{sec:method}
 
 \subsection{Overview}
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=0.9\textwidth]{figures/figure1_trigsolver_pipeline.png}
-\caption{Overview of TrigSolver. Grounded semantic mapping instantiates the periodicity-aware Trig-URM, while TMM-guided DIS coordinates trigonometric operations, controlled symbolic execution, periodic completion, and exact validation.}
-\label{fig:trigsolver_overview}
+\includegraphics[width=0.96\textwidth]{figures/figure1_tmm_guided_dis_architecture.png}
+\caption{Reasoning architecture. A supporting problem-understanding process forms $U^{(0)}$ from the raw problem; the TMM library and dynamic DIS constitute the reasoning core. DIS repeatedly retrieves, executes, validates, and updates bounded symbolic transitions with controlled CAS support, returning a verified answer or explicit abstention.}
+\label{fig:reasoning_overview}
 \end{figure*}
 
-TrigSolver transforms a problem through seven stages: formula preprocessing, grounded semantic mapping, Trig-URM construction, TMM candidate matching, DIS route execution, interval and periodic completion, and exact answer validation. Formula preprocessing normalizes mathematical notation, angle symbols, and expression references. Grounded semantic mapping identifies the task family, target expressions, variables, and constraints that are explicitly stated in the problem. It does not generate a solution or infer hidden mathematical facts. The resulting Trig-URM is the initial symbolic state from which all mathematical reasoning proceeds.
+Figure~\ref{fig:reasoning_overview} separates the supporting input process from the symbolic reasoning core. After $U^{(0)}$ is established, DIS places it in a bounded candidate-state queue and retrieves TMMs whose prerequisites are satisfied by the current state and unsatisfied goal. A TMM may normalize, transform, derive, solve, complete, or validate a mathematical object through the controlled symbolic executor. Only locally validated results form successor states. Search terminates when the requested answer conditions are satisfied and the final validator accepts the result; otherwise, queue exhaustion, a budget violation, or an unresolved symbolic output produces explicit abstention.
 
-At each inference step, DIS examines the current state and the unsatisfied goal fields, retrieves TMMs whose prerequisites hold, and selects the next transition. The chosen TMM invokes only the symbolic operations permitted by its definition. Its output is validated before being written to the derived-fact component of Trig-URM. The process terminates when the goal contract is satisfied and the final answer passes exact validation. If no supported and verifiable route exists, the solver returns an explicit abstention rather than an unchecked answer.
-
-\subsection{Periodicity-Aware Trig-URM}
-
-The Trigonometric Uniform Representation Model encodes a problem as
-\begin{equation}
-    \mathcal{U}_{\mathrm{trig}}=
-    \langle F,A,E,C,G,D\rangle,
-\end{equation}
-where $F$ contains function objects and their families; $A$ records angle symbols, units, domains, quadrants, principal intervals, and modular relations; $E$ is a typed graph of input and generated expressions; $C$ contains equalities, inequalities, domain restrictions, interval conditions, parameter assumptions, and excluded points; $G$ specifies the task family, target references, requested properties, and output contract; and $D$ stores validated facts produced during inference.
-
-This decomposition separates explicit problem semantics from inferred mathematical knowledge. The semantic mapper may populate $F$, $A$, $E$, $C$, and $G$ only from the input, while TMM execution monotonically extends $D$ and may add validated canonical expressions or constraints. Incorporating the output contract into $G$ is important because the same expression may require different reasoning depending on whether the problem requests a single value, an interval-restricted result, or all real solutions.
-
-Periodicity is encoded through a structured periodic set rather than a textual suffix attached to a local solution. Let $\mathcal{S}_{0}$ be the solution units in a base period, $T$ a positive period, $\Omega$ the variable domain, and $\mathcal{X}$ a set of singular or excluded points. The corresponding complete solution is
-\begin{equation}
-    \mathcal{S}=
-    \left(
-    \bigcup_{k\in\mathbb{Z}}
-    \left(\mathcal{S}_{0}+kT\right)
-    \right)
-    \cap\Omega\setminus\mathcal{X}.
-    \label{eq:periodic_set}
-\end{equation}
-The elements of $\mathcal{S}_{0}$ may be points or intervals with explicit endpoint closure. Equation~\eqref{eq:periodic_set} therefore covers discrete equation roots, repeated inequality intervals, cross-period intervals, and full-period domains with excluded singularities. This representation also makes periodic completeness directly testable.
+This division fixes the responsibility of each component. The supporting front end records explicit problem semantics but cannot select a mathematical solution path. The symbolic executor supplies allowlisted computations but cannot decide why an operation is appropriate or whether its output completes the problem. TMM-guided DIS owns operation selection, state progression, alternative exploration, completion, and acceptance. The proposed method is therefore neither a language-model wrapper nor an unconstrained CAS pipeline.
 
 \subsection{Trigonometric Meta-Models}
 
-A Trigonometric Meta-Model is a bounded symbolic knowledge unit defined as
+\noindent\textbf{Definition 2 (Trigonometric Meta-Model).}
+A Trigonometric Meta-Model is a five-tuple
 \begin{equation}
-    M_i=\langle id_i,P_i,O_i,U_i,V_i\rangle,
+    M_i=\langle I_i,P_i,O_i,U_i,V_i\rangle,
 \end{equation}
-where $id_i$ is the model identifier, $P_i$ is a set of structural and mathematical prerequisites, $O_i$ is the symbolic operation, $U_i$ specifies the state update, and $V_i$ is the local validation condition. A TMM can be executed only when $P_i$ is satisfied by the current Trig-URM. The result of $O_i$ is committed through $U_i$ only if it passes $V_i$. Consequently, the symbolic executor provides computational primitives, whereas the TMM determines when an operation is meaningful and what must be checked afterward.
+where $I_i$ is a unique identifier, $P_i$ is a predicate specifying structural and mathematical prerequisites, $O_i$ is a bounded trigonometric operation, $U_i$ defines the resulting state update, and $V_i$ is a local validation condition. Given state $U^{(j)}$, $O_i$ may be executed only if $P_i(U^{(j)})$ holds. Its candidate update is committed as $U^{(j+1)}$ only when $V_i$ accepts the result.
+
+A TMM occupies a deliberate level of abstraction. It is smaller than an end-to-end task solver because it performs one bounded transition, but it is larger than a raw CAS call because it specifies applicability, state effects, and validation together. The same TMM can consequently participate in different solving goals. An equivalence-preserving transformation, for example, may terminate an identity problem or prepare an equation or inequality for branch reasoning. Table~\ref{tab:tmm_operations} organizes the library by four recurring symbolic operations rather than by the five evaluation strata.
 
 \begin{table*}[t]
 \centering
-\caption{Core Trigonometric Meta-Models used by TrigSolver.}
-\label{tab:tmm_library}
-\begin{tabular}{p{0.28\textwidth}p{0.64\textwidth}}
+\caption{Cross-task symbolic operations and representative Trigonometric Meta-Models.}
+\label{tab:tmm_operations}
+\begin{tabular}{p{0.20\textwidth}p{0.21\textwidth}p{0.31\textwidth}p{0.20\textwidth}}
 \toprule
-Meta-model & Function in symbolic inference \\
+Operation group & Representative TMMs & Prerequisite and state effect & Validation duty \\
 \midrule
-\texttt{TMM-AngleNormalize} & Normalizes angle units, principal intervals, quadrants, and modular relations. \\
-\texttt{TMM-ExactEvaluate} & Evaluates special-angle expressions under explicit sign and value constraints. \\
-\texttt{TMM-IdentityTransform} & Applies bounded identity transformations while preserving equivalence and domain conditions. \\
-\texttt{TMM-SinusoidCanonicalize} & Converts a single-harmonic expression into a canonical sine or cosine form. \\
-\texttt{TMM-PropertyDerive} & Derives period, amplitude, phase, monotonic intervals, symmetry, extrema, and range. \\
-\texttt{TMM-EquationBaseSolve} & Generates all valid equation branches within a selected base period. \\
-\texttt{TMM-IntervalSolve} & Solves domain, range, and inequality constraints with explicit endpoint semantics. \\
-\texttt{TMM-PeriodicComplete} & Lifts a base-period result to a complete periodic set and applies exclusions. \\
-\texttt{TMM-AnswerValidate} & Verifies expression or set equivalence, branch coverage, periodic completeness, and option matching. \\
+Angle and expression normalization & \texttt{AngleNormalize}, \texttt{SinusoidCanonicalize} & A supported angle convention and expression are rewritten into compatible executable forms while retaining conditions. & Unit, variable, domain, and canonical-form consistency \\
+Equivalence-preserving transformation & \texttt{IdentityTransform}, \texttt{ExactEvaluate} & An applicable identity or exact-value relation produces an equivalent expression or value. & Symbolic equivalence under the active conditions \\
+Constraint and branch reasoning & \texttt{PropertyDerive}, \texttt{EquationBaseSolve}, \texttt{IntervalSolve} & Active domains and constraints yield properties, all valid base branches, or interval units. & Branch coverage, endpoints, domains, and exclusions \\
+Periodic completion and validation & \texttt{PeriodicComplete}, \texttt{AnswerValidate} & Base-period units are lifted to the requested domain and matched to the answer contract. & Periodic completeness, set equivalence, and option uniqueness \\
 \bottomrule
 \end{tabular}
 \end{table*}
 
-The TMM library is shared across problem families. For example, an identity problem may terminate after \texttt{TMM-IdentityTransform} and \texttt{TMM-AnswerValidate}, whereas an inequality problem may use the same identity transformation before invoking interval solving and periodic completion. This reuse is central to the method: task families are not implemented as isolated end-to-end solvers but as goal-specific routes through common validated operations.
+\subsection{Dynamic TMM-Guided DIS}
 
-\subsection{TMM-Guided Decoupled Inference}
-
-DIS separates procedural reasoning from the mathematical content of individual TMMs. Given a state $\mathcal{U}^{(j)}_{\mathrm{trig}}$, DIS constructs a signature from the task family, target expression shape, active constraints, available derived facts, and unsatisfied output fields. It then retrieves the compatible set
+Let $\mathcal{L}$ denote the TMM library. For a reasoning state $U^{(j)}$, DIS retrieves
 \begin{equation}
     \mathcal{M}^{(j)}=
-    \{M_i \mid P_i(\mathcal{U}^{(j)}_{\mathrm{trig}})=\mathrm{true}\}.
+    \{M_i\in\mathcal{L}\mid P_i(U^{(j)})=\mathrm{true}\}.
 \end{equation}
-A route policy selects the TMM that most directly reduces the unresolved goal while respecting the maximum transition budget. The selected operation produces a candidate state $\widetilde{\mathcal{U}}^{(j+1)}_{\mathrm{trig}}$. If the local validator accepts the transition, DIS commits the new state; otherwise, the candidate is rejected and an alternative compatible route is considered. State signatures prevent cycles and repeated application of the same non-progressing operation.
+Candidate retrieval depends on the present expressions, constraints, derived facts, and unsatisfied goal conditions; it does not select a fixed route from an evaluation-category label. Each admissible TMM produces a candidate transition through $O_i$ and $U_i$. A failed local condition $V_i$ rejects that transition without corrupting the parent state, allowing DIS to consider an alternative action.
 
-For identity transformation, DIS favors rules that move the target expression toward a task-compatible canonical form while retaining side conditions. For interval-constrained solving, it first constructs a base-domain result and then intersects it with the explicit constraints in $C$. For equations and inequalities over the reals, it invokes periodic completion only after all base-period branches have been generated. The final validator checks the resulting expression or set against both the mathematical constraints and the output contract in $G$.
+DIS performs bounded best-first exploration over the accepted candidate states. Queue priority is lexicographic: states with fewer unsatisfied goal conditions are preferred, followed by shallower transition depth and lower symbolic-operation cost; remaining ties are resolved deterministically by the TMM identifier and canonical state signature. The signature records normalized expressions, active constraints, derived facts, and goal status, enabling duplicate suppression and preventing non-progressing cycles. Search is limited by a maximum transition depth and expansion budget. Thus, dynamic exploration does not imply unrestricted theorem proving: every expansion is both structurally matched and locally validated.
+
+Success requires more than a nonempty symbolic output. A state is terminal only when the requested answer object and domain conditions have been constructed and the final exact validator accepts expression or set equivalence, branch coverage, periodic completeness, and option uniqueness where applicable. DIS abstains when the initial state is invalid, no applicable TMM remains, all candidate transitions fail validation, the executor returns an unresolved result, or the search budget is exhausted. Algorithm~\ref{alg:dis} summarizes this control process.
 
 \begin{algorithm}[t]
-\caption{TMM-guided decoupled inference}
+\caption{Dynamic TMM-guided decoupled inference}
 \label{alg:dis}
+\small
 \begin{algorithmic}[1]
-\REQUIRE Problem $x$ or Oracle state $\mathcal{U}_{\mathrm{trig}}$, TMM library $\mathcal{L}$, transition budget $B$
-\ENSURE Answer $y=(a,\mathcal{S},\mathcal{H},z)$
-\STATE Preprocess formulas and construct or load $\mathcal{U}_{\mathrm{trig}}$
-\FOR{$j=1$ to $B$}
-    \IF{the output contract in $G$ is satisfied}
-        \STATE Apply exact answer and completeness validation
-        \RETURN a verified answer if accepted
+\REQUIRE Raw problem $P$, TMM library $\mathcal{L}$, search budget $B$
+\ENSURE Verified answer and trace, or explicit abstention
+\STATE $\widehat U^{(0)}\leftarrow\operatorname{FormState}(P)$
+\IF{$\neg\operatorname{Grounded}(\widehat U^{(0)})$}
+    \RETURN \textsc{Abstain}(\texttt{INVALID\_STATE})
+\ENDIF
+\STATE $U^{(0)}\leftarrow\widehat U^{(0)}$; $Q\leftarrow\{U^{(0)}\}$; $b\leftarrow 0$
+\STATE $\Sigma\leftarrow\{\operatorname{sig}(U^{(0)})\}$ \COMMENT{visited signatures}
+\WHILE{$Q\neq\varnothing$ and $b<B$}
+    \STATE $U^{(j)}\leftarrow\operatorname{PopBest}(Q)$; $b\leftarrow b+1$
+    \IF{$\operatorname{Goal}(U^{(j)})\land\operatorname{FinalValid}(U^{(j)})$}
+        \RETURN $\operatorname{Answer}(U^{(j)})$ and transition trace
     \ENDIF
-    \STATE Retrieve $\mathcal{M}^{(j)}\subseteq\mathcal{L}$ whose prerequisites hold
-    \IF{$\mathcal{M}^{(j)}=\varnothing$}
-        \RETURN an abstention with reason \texttt{NO\_ROUTE}
-    \ENDIF
-    \STATE Select a goal-compatible $M_i\in\mathcal{M}^{(j)}$
-    \STATE Execute its bounded symbolic operation and obtain a candidate transition
-    \IF{the local validation condition $V_i$ holds}
-        \STATE Commit the state update and append the transition to $\mathcal{H}$
-    \ELSE
-        \STATE Reject the transition and record its failure condition
-    \ENDIF
-\ENDFOR
-\RETURN an abstention with the corresponding unresolved or validation status
+    \STATE \textbf{Retrieve:} $\mathcal{M}^{(j)}\leftarrow\{M_i\in\mathcal{L}:P_i(U^{(j)})\}$
+    \FOR{each $M_i\in\operatorname{Rank}(\mathcal{M}^{(j)})$}
+        \STATE \textbf{Execute:} $\widetilde U\leftarrow U_i(U^{(j)},O_i(U^{(j)}))$
+        \STATE \textbf{Validate:} $v\leftarrow V_i(U^{(j)},\widetilde U)$
+        \IF{$v\land\operatorname{sig}(\widetilde U)\notin\Sigma$}
+            \STATE \textbf{Update:} $Q\leftarrow\operatorname{Push}(Q,\widetilde U)$
+            \STATE $\Sigma\leftarrow\Sigma\cup\{\operatorname{sig}(\widetilde U)\}$
+        \ELSE
+            \STATE $\operatorname{RecordFailure}(M_i,v)$
+        \ENDIF
+    \ENDFOR
+\ENDWHILE
+\RETURN \textsc{Abstain}($\operatorname{TerminalReason}()$)
 \end{algorithmic}
 \end{algorithm}
 
-\subsection{Controlled Symbolic Execution and Validation}
+\subsection{Cross-Task Symbolic Operations}
 
-TrigSolver uses a computer algebra system as a controlled executor rather than as the overall solver. The executor exposes a whitelist of exact operations for trigonometric expansion and simplification, equation and inequality solving, periodicity detection, continuous-domain analysis, and symbolic set manipulation. Each invocation receives a normalized expression and explicit assumptions from Trig-URM. Conditional or unresolved symbolic outputs are returned to DIS as non-final states and cannot be presented as answers.
+\noindent\textit{Angle and expression normalization.}
+The first operation group reconciles angle units, symbols, principal intervals, and executable expression forms while retaining the constraints that determine their meaning. Normalization exposes structures required by later TMMs, such as a single harmonic or a modular angle relation, but it does not itself satisfy the solving goal. A normalization transition is rejected if it changes the variable domain or cannot preserve the original expression semantics.
 
-Validation is performed at both transition and answer levels. Expression transitions require symbolic equivalence under the original domain. Equation and inequality results require substitution or set-equivalence checks, correct endpoint semantics, and preservation of excluded points. Periodic answers additionally require branch coverage within a base period and invariance under translation by $T$. Numerical sampling may reject an invalid candidate, but it is not sufficient to accept a symbolic identity or a complete solution set. This asymmetric use of numerical evidence prevents sampled agreement from being mistaken for proof.
+\noindent\textit{Equivalence-preserving transformation.}
+Identity and exact-value TMMs apply only when their algebraic and domain prerequisites hold. Candidate expressions are generated by bounded rules or canonicalization and accepted only after exact equivalence checks. In the running example $\sin x+\cos x>1$, the identity transition writes
+\begin{equation}
+    \sqrt{2}\sin(x+\pi/4)>1
+\end{equation}
+to $U^{(1)}$, preserving the real domain and preparing a standard sine inequality.
+
+\noindent\textit{Constraint and branch reasoning.}
+The next group evaluates the normalized relation under the active domain, interval, endpoint, and exclusion conditions. Equation TMMs retain all supported branches; inequality and property TMMs construct exact points or intervals rather than sampled approximations. For the example, solving within a base period yields $\mathcal{S}_0=(0,\pi/2)$ in $U^{(2)}$. This local result is valid but is not yet a complete answer over the reals.
+
+\noindent\textit{Periodic completion and validation.}
+Let $\mathcal{S}_0$ be the valid units in a base period, $T>0$ the period, $\Omega$ the requested domain, and $\mathcal{X}$ the excluded points. Periodic completion constructs
+\begin{equation}
+    \mathcal{S}=
+    \left(\bigcup_{k\in\mathbb{Z}}(\mathcal{S}_0+kT)\right)
+    \cap\Omega\setminus\mathcal{X}.
+    \label{eq:periodic_completion}
+\end{equation}
+It then checks base-period branch coverage, endpoint semantics, exclusions, and invariance under translation by $T$. For the example, $U^{(3)}$ contains $\bigcup_{k\in\mathbb{Z}}(2k\pi,\pi/2+2k\pi)$, and $U^{(4)}$ is terminal only after exact validation.
+
+\subsection{Worked Trace and Execution Boundary}
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=0.9\textwidth]{figures/figure2_periodic_reasoning_case.png}
-\caption{A worked reasoning trace for $\sin x+\cos x>1$. Identity transformation, base-period interval solving, periodic completion, and exact validation operate as successive TMM transitions over the same Trig-URM state.}
+\includegraphics[width=0.96\textwidth]{figures/figure2_tmm_state_reasoning_trace.png}
+\caption{Worked state trace for $\sin x+\cos x>1$. Each labeled transition denotes a TMM selected by dynamic DIS; equivalence-preserving transformation, base-period branch reasoning, periodic completion, and exact validation progressively establish $U^{(1)}$--$U^{(4)}$. The lower ledger records the corresponding validated state progression.}
 \label{fig:periodic_reasoning_case}
 \end{figure*}
+
+Figure~\ref{fig:periodic_reasoning_case} instantiates the Definition--Process--Example--Algorithm loop. The raw problem is grounded as $U^{(0)}$; an identity TMM produces the equivalent standard form in $U^{(1)}$; branch reasoning derives $\mathcal{S}_0$ in $U^{(2)}$; periodic completion constructs the global set in $U^{(3)}$; and answer validation establishes $U^{(4)}$. These are state transitions selected by one controller, not separate solvers for identity and inequality categories.
+
+The executor supports an allowlisted expression grammar and exact operations for trigonometric expansion and simplification, equation and inequality solving, periodicity and continuous-domain analysis, and symbolic sets. Unsupported syntax, unresolved conditional sets, or timeout results cannot become final answers. Exact symbolic checks accept expressions and ordinary or periodic sets; numerical sampling may reject a candidate but cannot establish an identity or complete solution set. The implementation bounds formula trees, CAS time, identity search, and DIS transitions; the corresponding versions and budgets are reported in Section~\ref{sec:experiments}.
 
 \section{Experiments}
 \label{sec:experiments}
 
-\subsection{Research Questions and Evaluation Protocol}
+\subsection{Dataset and Protocol}
 
-The experiments examine five questions: whether Trig-URM provides adequate coverage and accurate representation across the task families; whether TrigSolver improves end-to-end and Oracle solving accuracy over language-model and CAS baselines; whether TMM-guided DIS contributes beyond generic symbolic execution; whether explicit periodic reasoning improves complete-set construction; and where the system succeeds or fails as structural complexity increases.
+The benchmark is derived from direct trigonometric function problems in CMM-Math \cite{liu2024cmmmath}. Scope filtering retains text-based, single-target problems with exact answer semantics and excludes image-dependent, geometry-dominant, multi-question, unsupported transcendental, and contaminated records. Exact duplicates and source- or template-related variants are grouped before partitioning so that development and test problems do not share the same underlying item. Development data are used only to configure supported rules, search budgets, and prompts. The formal protocol permits a test run only after independent annotation, adjudication, and verification against a frozen file hash. \textit{[EVIDENCE NEEDED: final test hash and freeze status.]}
 
-We use two complementary evaluation tracks. In the Raw track, the system receives the original problem statement and optional answer choices, so the result includes errors from semantic mapping and symbolic reasoning. In the Oracle track, the system receives an independently annotated Trig-URM but uses the same TMM library, DIS, symbolic executor, periodic completion, and validator. The difference between the two tracks measures the contribution and remaining error of semantic mapping without presenting Oracle performance as an end-to-end result.
+The locked test composition contains 50 problems, with ten examples in each evaluation stratum and five multiple-choice plus five open-answer problems per stratum. All equation examples request the complete real solution set. Annotators first derive a structured exact answer---an expression, ordinary set, or periodic set---and only then map it to an option when choices are present. Two independent reviews and field-level adjudication are required before a record enters the frozen file. This mathematical-first protocol prevents presentation-string differences or option labels from defining correctness.
 
-\subsection{Dataset and Annotation}
+\subsection{Baselines, Settings, and Metrics}
 
-The evaluation benchmark was constructed from direct trigonometric function problems in CMM-Math and contains \textit{TBD} text-based problems after scope filtering, exact deduplication, and answer normalization \cite{liu2024cmmmath}. Each problem was assigned to one of the five families in Table~\ref{tab:task_families}. Problems dominated by triangle geometry, image interpretation, multiple dependent subquestions, unsupported parameterized reasoning, or non-verifiable answers were excluded from the core set.
+We compare three methods under the same raw problem statements and exact evaluator. \textit{Direct LLM} generates a derivation and final mathematical answer without symbolic control. \textit{LLM + generic CAS} maps the problem to CAS calls and returns the tool-assisted result, but has no TMM prerequisites, dynamic state search, custom periodic completion, or exact acceptance controller. \textit{TMM-guided DIS (ours)} uses the complete process in Section~\ref{sec:method}. The language-model snapshot, decoding policy, answer-extraction rules, retry budget, and CAS version are held fixed wherever applicable so that the comparison tests reasoning control rather than access to different foundation models or tools.
 
-For every retained problem, annotators produced a normalized mathematical answer and an Oracle Trig-URM containing the six representation components. Periodic answers were annotated as base-period units, period values, domains, endpoint closure, and exclusions rather than as unconstrained strings. The benchmark was split by source problem and normalized expression structure so that exact duplicates and parameter variants could not cross development and test partitions. The final test set was frozen before system evaluation, and annotators constructing the Oracle state did not inspect solver predictions.
+The supporting semantic mapper uses \texttt{qwen3.7-flash-2026-07-15} with temperature $0.01$, non-thinking JSON output, and at most one schema retry. Mathematical expressions are parsed into an allowlisted tree of at most 256 nodes. The controlled executor uses SymPy 1.14.0 with a two-second limit per call and rejects unresolved \texttt{ConditionSet} outputs. DIS permits at most eight transitions per path; bounded identity search uses depth four and beam width 12. The final artifact records the source, selection, Gold-schema, prompt, and test hashes together with the exact baseline prompts and execution environment.
 
-\subsection{Baselines and Implementation Settings}
+The primary metric is problem-level accuracy, defined over all 50 frozen problems; abstention counts as incorrect. We additionally report correct/10 for each evaluation stratum, coverage, applicable periodic completeness, and false-acceptance rate. Coverage is the proportion of problems for which a method returns an answer. Periodic completeness measures whether all required branches, intervals, and exclusions are represented for applicable problems. False acceptance counts returned answers that fail the exact evaluator. Conditional accuracy, latency, token use, and symbolic-operation cost are secondary diagnostics rather than headline claims.
 
-The Raw-track baselines include direct language-model reasoning and a schema-constrained language-model--CAS pipeline. The former generates a solution and final answer from the problem text, while the latter asks the same semantic model to produce a formal expression and then invokes a generic CAS without Trig-URM, TMM routing, or periodic completion. The Oracle-track baselines include a CAS-only solver and a flat-state solver with generic operation routing. All systems use the same frozen test problems, normalized answer protocol, and option-equivalence evaluator.
+\subsection{Main Comparison}
 
-TrigSolver uses a fixed semantic model with deterministic or near-deterministic decoding for Raw mapping. The symbolic executor is version-locked and each operation is subject to a fixed time budget. The maximum number of DIS transitions, identity-search depth, and route priority are selected only on the development set and remain unchanged for the frozen evaluation. Full version identifiers, prompts, data hashes, and execution parameters will be reported with the final artifact.
+Table~\ref{tab:main_results} will contain the single end-to-end comparison after the freeze gate is satisfied. TMM-guided DIS solves \textit{[EVIDENCE NEEDED: correct/50]} problems, corresponding to \textit{[EVIDENCE NEEDED: percentage]} accuracy. This is \textit{[EVIDENCE NEEDED]} percentage points above Direct LLM and \textit{[EVIDENCE NEEDED]} points above LLM + generic CAS under identical raw inputs. Coverage and false acceptance must be interpreted together: a method that always returns an answer is not more reliable if exact evaluation rejects those outputs.
 
-\subsection{Metrics}
-
-The primary metric is problem-level accuracy, for which an abstention counts as an incorrect answer. Coverage is the proportion of problems for which a system returns a validated answer, and conditional accuracy is the accuracy among covered problems. Representation quality is measured by field-level Trig-URM accuracy and goal-reference accuracy. Capability-specific metrics include identity-transformation validity, interval-set equivalence, periodic completeness, and branch recall. We also report the false-acceptance rate to distinguish safe abstention from incorrectly validated output, together with latency and symbolic-operation cost as secondary efficiency measures.
-
-\subsection{Main Results}
-
-Table~\ref{tab:main_results} reports the principal comparison. TrigSolver-Raw achieved the strongest end-to-end accuracy of \textit{TBD}, exceeding direct language-model reasoning by \textit{TBD} percentage points and the generic language-model--CAS pipeline by \textit{TBD} percentage points. The improvement was largest on equation and domain-range-inequality problems, where a correct local transformation did not by itself guarantee a complete answer. TrigSolver also maintained a lower false-acceptance rate of \textit{TBD}, indicating that validation rejected unsupported outputs rather than converting unresolved states into apparently correct answers.
-
-In the Oracle track, full TrigSolver achieved an accuracy of \textit{TBD}, compared with \textit{TBD} for CAS-only solving and \textit{TBD} for flat-state generic routing. The Oracle result shows that the structured reasoning layer remains beneficial even when semantic mapping is removed from the evaluation. The Raw--Oracle gap of \textit{TBD} percentage points quantifies the remaining impact of semantic representation errors.
+The per-stratum counts show whether the overall score is distributed across the benchmark or concentrated in locally evaluable expressions. TMM-guided DIS obtains \textit{[EVIDENCE NEEDED: five correct/10 values]}. The largest remaining weakness occurs in \textit{[EVIDENCE NEEDED: verified stratum and failure pattern]}. Because each stratum contains only ten problems, these counts characterize the pilot boundary and are not used to claim population-level superiority for a particular problem category.
 
 \begin{table*}[t]
 \centering
-\caption{Main results under Raw and Oracle evaluation. Accuracy, coverage, conditional accuracy, and periodic completeness are reported as percentages. All values will be inserted after the frozen evaluation.}
+\caption{End-to-end results on the frozen 50-problem benchmark. Accuracy and coverage are percentages; the five rightmost columns report correct/10.}
 \label{tab:main_results}
-\begin{tabular}{llccccc}
+\scriptsize
+\begin{tabular}{lcccccccc}
 \toprule
-Track & Method & Accuracy & Coverage & Conditional accuracy & Periodic completeness & False acceptance \\
+Method & Correct/50 & Accuracy & Coverage & Eval. & Identity & Property & Equation & D/R/I \\
 \midrule
-Raw & Direct language model & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} \\
-Raw & Language model + generic CAS & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} \\
-Raw & TrigSolver-Raw & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} \\
-\midrule
-Oracle & CAS-only & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} \\
-Oracle & Flat state + generic routing & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} \\
-Oracle & TrigSolver-Oracle & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} \\
+Direct LLM & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} \\
+LLM + generic CAS & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} \\
+TMM-guided DIS (ours) & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} \\
 \bottomrule
 \end{tabular}
 \end{table*}
 
-\subsection{Ablation Study}
+\subsection{Targeted Ablations}
 
-The ablation study isolates the effects of representation, inference control, periodic completion, and validation. Replacing Trig-URM with a flat expression state reduced overall accuracy by \textit{TBD} percentage points and disproportionately affected problems involving principal intervals or multiple output fields. Removing the TMM library and relying on generic CAS operations reduced identity-transformation validity and function-property accuracy. Removing DIS routing increased unresolved and conflicting operation sequences, showing that the gain does not follow from merely collecting trigonometric operators.
+Periodic completion is evaluated by disabling the transition defined in Eq.~\eqref{eq:periodic_completion} while leaving the other TMMs unchanged. The ablated method obtains \textit{[EVIDENCE NEEDED: correct/50 and accuracy]}, and applicable periodic completeness changes from \textit{[EVIDENCE NEEDED]} to \textit{[EVIDENCE NEEDED]}. The decisive diagnostic is the number of answers that remain correct in a base period but fail over the requested real domain. This comparison supports the periodic-completion claim only; it does not isolate the independent contribution of dynamic DIS.
 
-Periodic completion produced the clearest task-specific effect. Without it, many equation and inequality predictions were correct within a selected base period but incomplete over the requested domain. This variant reduced periodic completeness from \textit{TBD} to \textit{TBD}. Removing exact validation increased coverage but also raised false acceptance to \textit{TBD}, confirming that apparent answer rate is not an adequate measure of reliable symbolic reasoning.
+Exact validation is evaluated by allowing terminal candidates to be returned without the final expression-, set-, periodic-, and option-equivalence checks. Removing validation changes accuracy from \textit{[EVIDENCE NEEDED]} to \textit{[EVIDENCE NEEDED]}, coverage from \textit{[EVIDENCE NEEDED]} to \textit{[EVIDENCE NEEDED]}, and false acceptance from \textit{[EVIDENCE NEEDED]} to \textit{[EVIDENCE NEEDED]}. This comparison tests whether additional answer production reflects genuine solving or merely permits invalid candidates to escape rejection.
 
 \begin{table}[t]
 \centering
-\caption{Ablation results for the principal design components.}
+\caption{Targeted ablations of periodic completion and exact validation.}
 \label{tab:ablations}
 \scriptsize
-\setlength{\tabcolsep}{2pt}
 \resizebox{\columnwidth}{!}{%
-\begin{tabular}{lccc}
+\begin{tabular}{lccccc}
 \toprule
-Variant & Accuracy & Periodic completeness & False acceptance \\
+Variant & Correct/50 & Accuracy & Coverage & Periodic completeness & False acceptance \\
 \midrule
-Full TrigSolver & \textit{TBD} & \textit{TBD} & \textit{TBD} \\
-Flat representation & \textit{TBD} & \textit{TBD} & \textit{TBD} \\
-Without TMMs & \textit{TBD} & \textit{TBD} & \textit{TBD} \\
-Without DIS routing & \textit{TBD} & \textit{TBD} & \textit{TBD} \\
-Without periodic completion & \textit{TBD} & \textit{TBD} & \textit{TBD} \\
-Without exact validation & \textit{TBD} & \textit{TBD} & \textit{TBD} \\
+Full method & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} \\
+No periodic completion & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} \\
+No exact validation & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
 }
 \end{table}
 
-\subsection{Capability and Error Analysis}
+\subsection{Error and Trace Analysis}
 
-Capability-level evaluation confirms that the three flagship operations are integrated rather than handled by unrelated solvers. On identity problems, TrigSolver attained a transformation-validity rate of \textit{TBD} and preserved all recorded domain conditions in \textit{TBD} of cases. On interval-constrained problems, it achieved an interval-set equivalence of \textit{TBD}, with most remaining errors involving \textit{TBD}. On equations and inequalities requiring all real solutions, periodic completeness reached \textit{TBD} and branch recall reached \textit{TBD}. Verified traces show that a typical successful route first canonicalizes or transforms an expression, solves it over a base interval, lifts every branch by the appropriate period, and finally filters singular points and checks the answer contract.
+We assign every unsuccessful problem to the earliest conclusion-changing stage: understood-state formation, unmet TMM prerequisites, exhausted search or no route, unresolved CAS output, periodic-completion failure, or final-validation failure. The frozen evaluation contains \textit{[EVIDENCE NEEDED: counts by stage]}. This decomposition distinguishes problems that require better grounding from those that expose missing symbolic knowledge or insufficient search, while keeping all abstentions in the denominator of the primary metric.
 
-Errors were assigned to semantic mapping, formula parsing, TMM preconditions, unsupported routes, unresolved CAS outputs, periodic completion, or final validation. In the Raw track, the largest error source was \textit{TBD}; in the Oracle track, the dominant remaining category was \textit{TBD}. This separation is important because the two categories require different remedies: mapping errors call for improved grounding or representation extraction, whereas Oracle failures expose missing mathematical coverage in the TMM or periodic reasoning layers.
+The successful trace in Fig.~\ref{fig:periodic_reasoning_case} demonstrates how four operation groups form one verified route. A complementary frozen-test case, \textit{[EVIDENCE NEEDED: problem identifier and concise failure]}, terminates at \textit{[EVIDENCE NEEDED: stage]} because \textit{[EVIDENCE NEEDED: verified reason]}. Reporting this boundary case is necessary: the method's inspectable transitions support diagnosis, but they do not imply that every input admits a route within the supported grammar and TMM library.
 
-\section{Analysis}
-\label{sec:analysis}
+\section{Discussion}
+\label{sec:discussion}
 
-The results support the view that periodicity is a representation problem before it is an answer-formatting problem. A flat expression can encode $\sin x=c$, but it does not specify whether the target is a principal value, a solution within a bounded interval, or the complete set over the reals. Trig-URM makes this distinction explicit in $A$, $C$, and $G$, while Equation~\eqref{eq:periodic_set} provides a common semantics for repeated points and intervals. The periodic-completion ablation demonstrates the consequence of this design: removing the explicit lifting stage often preserves local correctness but destroys global completeness.
+The method separates local mathematical knowledge from global reasoning control. A TMM states when a bounded trigonometric action is applicable, how it changes the state, and what must be checked before that change is accepted. DIS organizes these actions into a goal-directed process while retaining alternatives and explicit failure states. The baseline comparison and exact-validation ablation are intended to test the practical consequence of this division: access to a language model and CAS is insufficient when operation choice, state progression, and answer acceptance remain implicit. Because this conference study does not include a fixed-route or no-DIS ablation, it supports the complete TMM-guided method rather than a causal estimate for dynamic search alone.
 
-The comparison between generic CAS execution and TMM-guided DIS also clarifies the role of domain knowledge. The advantage of TrigSolver does not arise from replacing exact symbolic computation. Instead, TMMs constrain when a symbolic operation is applicable, what state it consumes, what facts it produces, and how the result must be checked. DIS then composes these bounded operations according to the unsatisfied goal. This division allows one reasoning controller to support several problem families while preventing a generic tool output from bypassing domain, interval, or branch requirements.
+Periodicity is especially informative because it participates throughout the reasoning process. It influences the choice of base domain, the construction of valid branches, the lifting of points or intervals, the removal of singularities, and the final completeness check. The periodic-completion ablation therefore distinguishes a globally valid answer from one that is only locally correct. This perspective also explains why periodicity should not be reduced to formatting: attaching $+2k\pi$ to an incomplete base solution cannot recover a missing branch or an invalid endpoint.
 
-Raw and Oracle evaluation provides a diagnostic interpretation of end-to-end performance. The Oracle track estimates the capability of the symbolic solver when the intended mathematical structure is available, whereas the Raw track measures the complete system. A substantial Raw--Oracle gap would indicate that semantic mapping remains the principal bottleneck; a small gap accompanied by lower Oracle performance would instead point to insufficient TMM coverage. Reporting both tracks therefore prevents improvements in parsing from being conflated with improvements in symbolic reasoning.
+The empirical claim remains bounded by the 50-problem pilot, text-only input, the supporting semantic mapper, the expression grammar, and the implemented TMM library. The study excludes multimodal graph understanding, geometry-dominant problems, arbitrary transcendental systems, and broad formal proof. Validated traces provide a basis for solver diagnosis and potentially inspectable educational feedback, but no student-learning or pedagogical-quality conclusion is tested here. Uniform representation, multimodal extension, wider task coverage, and larger-scale evaluation are reserved for subsequent work.
 
-The framework also has a reliability advantage relevant to educational systems. Every accepted answer is associated with a sequence of named, locally validated state transitions. This trace can identify whether an error arose during angle normalization, identity transformation, interval restriction, periodic lifting, or option matching. Such traceability provides a basis for inspectable feedback and solver diagnosis. It does not, however, establish that the generated trace is pedagogically optimal or that it improves student learning; those questions require a separate educational evaluation.
+\section{Conclusion}
+\label{sec:conclusion}
 
-The present claim is bounded to the five families of direct, text-based trigonometric function problems defined in Section~\ref{sec:task_formulation}. The system does not cover arbitrary transcendental systems, visually grounded function graphs, open-ended proofs, or geometry problems in which trigonometry is only an auxiliary technique. Its symbolic guarantees are also conditional on the supported expression grammar, TMM library, and exact validation procedures. Within this scope, the experiments show that explicit periodic structure and meta-model-guided decoupled inference provide a unified basis for identity transformation, interval-constrained solving, and complete periodic solution-set construction.
+This paper formulates Trigonometric Meta-Models and a TMM-guided Decoupled Inference Strategy for composing bounded, validated symbolic transitions from an understood state. The frozen comparison, periodic-completion ablation, exact-validation ablation, and stage-specific traces provide the evidence required to assess the method's accuracy and reliability \textit{[EVIDENCE NEEDED: final quantitative sentence]}. Within the defined text-based pilot scope, the method offers a structured way to coordinate normalization, equivalent transformation, branch reasoning, and complete periodic-answer construction while returning explicit abstention when no verified route exists.
