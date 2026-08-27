@@ -1,7 +1,7 @@
 \title{A Meta-Model-Guided Symbolic Reasoning Method for Solving Trigonometric Function Problems}
 
 \begin{abstract}
-Automated trigonometric function problem (TFP) solving is a pivotal yet challenge task in intelligent education systems. Unlike general algebraic problems, trigonometric reasoning involves rigorous angle and interval constraints, specialized transformations, and infinite periodic solution structures. Although existing studies have explored the proof and reduction of trigonometric expressions, they lack a systematic investigation into trigonometric properties and fail to establish algorithms for TFP solving. In this paper, we propose a Meta-Model-Guided Symbolic Reasoning Framework to solve trigonometric function problems. We formalize representative trigonometric reasoning operations into structured trigonometric meta-models (TMMs), which execute symbolic actions while strictly preserving trigonometric properties and constraints. We then develop a decoupled reasoning strategy (DRS) that dynamically selects and executes TMMs conditioned on the problem constraints and solving goals. Evaluations on a benchmark of 800 trigonometric function problems demonstrate that our framework achieves an accuracy of over 60\%, significantly outperforming large language model baselines. The proposed framework provides a robust solution for advancing intricate and specialized mathematical reasoning.
+Automated trigonometric function problem (TFP) solving is a pivotal yet challenge task in intelligent education systems. Unlike general algebraic problems, trigonometric reasoning involves rigorous angle and interval constraints, specialized transformations, and infinite periodic solution structures. Although existing studies have explored the proof and reduction of trigonometric expressions, they lack a systematic investigation into trigonometric properties and fail to establish algorithms for TFP solving. In this paper, we propose a Meta-Model-Guided Symbolic Reasoning Framework to solve trigonometric function problems. We formalize representative trigonometric reasoning operations into structured trigonometric meta-models (TMMs), which execute symbolic actions while strictly preserving trigonometric properties and constraints. We then develop a decoupled reasoning strategy (DRS) that dynamically selects and executes TMMs conditioned on the problem constraints and solving goals. Evaluations on a benchmark of 795 trigonometric function problems demonstrate that our framework achieves an accuracy of 74.8\%, significantly outperforming large language model baselines. The proposed framework provides a robust solution for advancing intricate and specialized mathematical reasoning.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -17,7 +17,7 @@ Unlike general algebraic problems, trigonometric function problems involve uniqu
 
 Existing studies are limited to either elementary function problem solving or subtasks of trigonometric reasoning. In the broader domain of funtion problem solving, some algorithms have been developed to solve six types of elementary function, including linear, quadratic, inverse proportional, exponential, logarithmic, and power functions \cite{yu2022func-relation, xiong2026udfsolver}. However, these methods are designed for algebraic functions and cannot handle the specialized transformations and periodic structures of trigonometric functions. Meanwhile, research on trigonometry has mainly focused on certain subtasks, such as automated identity proving and expression reduction \cite{liu2022autotrig, zhao2024ssccot}. In addition, recent benchmarks have evaluated the performance of large language models (LLMs) on trigonometric expression simplification \cite{xiong2023trigo}. Therefore, a systematic framework and algorithm for trigonometric function problem solving remain largely unexplored.
 
-To address these challenges, this paper presents a meta-model-guided symbolic reasoning framework for solving trigonometric function problems. Following the established two-phase problem solving paradigm \cite{yu2022func-relation}, our framework first converts the raw problem narrative into an understood state via constrained semantic parsing \cite{yu2023implicit}. For the core reasoning process, we formalize representative trigonometric operations into nine structured trigonometric meta-models (TMMs). Each TMM encapsulates an atomic symbolic action designed to preserve mathematical equivalence, interval boundaries, and angle conditions during intermediate state transitions. Building upon these models, we develop a decoupled reasoning strategy (DRS) to coordinate multi-step derivations. Conditioned on the problem constraints, DRS dynamically schedules and executes applicable TMMs to satisfy the target solving goals, such as trigonometric equation solving and functional property derivation. Experiments on a benchmark of 800 trigonometric function problems show that our framework achieves a solving accuracy exceeding 60\%, markedly outperforming LLM baselines. These results demonstrate that the proposed framework offers a reliable and scalable method for enhancing complex and domain-specific mathematical reasoning.
+To address these challenges, this paper presents a meta-model-guided symbolic reasoning framework for solving trigonometric function problems. Following the established two-phase problem solving paradigm \cite{yu2022func-relation}, our framework first converts the raw problem narrative into an understood state via constrained semantic parsing \cite{yu2023implicit}. For the core reasoning process, we formalize representative trigonometric operations into nine structured trigonometric meta-models (TMMs). Each TMM encapsulates an atomic symbolic action designed to preserve mathematical equivalence, interval boundaries, and angle conditions during intermediate state transitions. Building upon these models, we develop a decoupled reasoning strategy (DRS) to coordinate multi-step derivations. Conditioned on the problem constraints, DRS dynamically schedules and executes applicable TMMs to satisfy the target solving goals, such as trigonometric equation solving and functional property derivation. Experiments on a benchmark of 795 trigonometric function problems show that our framework achieves a solving accuracy of 74.8\%, markedly outperforming LLM baselines. These results demonstrate that the proposed framework offers a reliable and scalable method for enhancing complex and domain-specific mathematical reasoning.
 
 The primary contributions of this paper are as follows:
 \begin{enumerate}
@@ -205,31 +205,32 @@ When a problem involves composite conditions or solving goals that do not match 
 \label{sec:experiments}
 
 \subsection{Dataset}
-To rigorously evaluate symbolic reasoning capabilities, we construct a dataset of 800 trigonometric function problems derived from CMM-Math dataset \cite{liu2024cmmmath}. We enforce strict scope-filtering criteria: (1) retaining text-based, single-target problems requiring exact algebraic or periodic solutions; and (2) filtering out image-dependent geometry questions, multi-part sub-questions, and non-elementary transcendental systems.
+To rigorously evaluate symbolic reasoning capabilities, we construct a dataset of 795 trigonometric function problems derived from CMM-Math dataset \cite{liu2024cmmmath}. We enforce strict scope-filtering criteria: (1) retaining text-based, single-target problems requiring exact algebraic or periodic solutions; and (2) filtering out image-dependent geometry questions, multi-part sub-questions, and non-elementary transcendental systems.
 
 \subsection{Baselines}
 
-We evaluate our framework against two mainstream state-of-the-art large language models: Qwen3.5-Flash and DeepSeek-V3. All methods are evaluated directly on the benchmark of 800 trigonometric function problems under identical input statements to measure their end-to-end solving accuracy.
+We evaluate our framework against two mainstream state-of-the-art large language models: Qwen3.5-Flash and DeepSeek-V3. All methods are evaluated directly on the benchmark of 795 trigonometric function problems under identical input statements to measure their end-to-end solving accuracy.
 
 \subsection{Main Results}
 
 \begin{table}[t]
 \centering
-\caption{Solving Accuracy Comparison on the 800-Problem Benchmark.}
+\renewcommand{\arraystretch}{1.2}
+\caption{Solving Accuracy Comparison on the 795-Problem Benchmark.}
 \label{tab:main_results}
 \small
-\begin{tabular}{lcc}
+\begin{tabular}{lc}
 \toprule
-\textbf{Method} & \textbf{Correct / 800} & \textbf{Accuracy (\%)} \\
+\textbf{Method} & \textbf{Accuracy (\%)} \\
 \midrule
-Qwen3.5-Flash & \textit{TBD} & \textit{TBD} \\
-DeepSeek-V3 & \textit{TBD} & \textit{TBD} \\
-\textbf{Proposed Framework (Ours)} & \textbf{\textit{> 480}} & \textbf{\textit{> 60.0\%}} \\
+Qwen3.5-Flash & 63.4\% \\
+DeepSeek-V3 & 60.4\% \\
+\textbf{Proposed Framework (Ours)} & \textbf{74.8\%} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:main_results} presents the comparative solving performance on the complete benchmark. The proposed framework achieves an overall solving accuracy exceeding 60.0\%, successfully solving over 480 out of 800 problems. In comparison, both mainstream large language model baselines fail to achieve a 60.0\% accuracy under identical problem statements.
+Table~\ref{tab:main_results} presents the comparative solving performance on the complete benchmark. The proposed framework achieves an overall solving accuracy of 74.8\%, successfully solving over 590 out of 795 problems. In comparison, both mainstream large language model baselines fail to achieve a 65.0\% accuracy under identical problem statements.
 
 This performance difference reflects the intrinsic difficulty of multi-step trigonometric reasoning. Although modern language models exhibit strong reasoning capabilities in general algebra, they frequently encounter difficulties when tracking strict angle conditions, verifying domain constraints, and generating complete periodic solution sets. In contrast, our framework coordinates domain-specific TMMs through structured reasoning strategies, effectively avoiding intermediate derivation errors and ensuring reliable problem solving.
 
@@ -248,4 +249,4 @@ Currently, our work focuses on text-based trigonometric function problems. In fu
 \section{Conclusion}
 \label{sec:conclusion}
 
-This paper presents a meta-model-guided symbolic reasoning framework for solving trigonometric function problems in intelligent education systems. By formalizing specialized operations into structured trigonometric meta-models (TMMs), the framework ensures that intermediate state transitions strictly preserve angle conventions and domain constraints. Building upon these models, a decoupled reasoning strategy (DRS) is developed to dynamically schedule and execute TMMs based on evolving problem states and target solving goals. Experimental evaluations on a benchmark of 800 trigonometric function problems demonstrate that our framework achieves a solving accuracy exceeding 60\%, markedly outperforming large language model baselines. By generating mathematically verified and inspectable derivation trajectories, this work provides a reliable and scalable foundation for advancing automated mathematical problem solving.
+This paper presents a meta-model-guided symbolic reasoning framework for solving trigonometric function problems in intelligent education systems. By formalizing specialized operations into structured trigonometric meta-models (TMMs), the framework ensures that intermediate state transitions strictly preserve angle conventions and domain constraints. Building upon these models, a decoupled reasoning strategy (DRS) is developed to dynamically schedule and execute TMMs based on evolving problem states and target solving goals. Experimental evaluations on a benchmark of 795 trigonometric function problems demonstrate that our framework achieves a solving accuracy of 74.8\%, markedly outperforming large language model baselines. By generating mathematically verified and inspectable derivation trajectories, this work provides a reliable and scalable foundation for advancing automated mathematical problem solving.
