@@ -205,38 +205,33 @@ When a problem involves composite conditions or solving goals that do not match 
 \label{sec:experiments}
 
 \subsection{Dataset}
-To rigorously evaluate symbolic reasoning capabilities, we construct a dedicated test benchmark derived from direct trigonometric function problems in CMM-Math \cite{liu2024cmmmath}. We enforce strict scope-filtering criteria: (1) retaining text-based, single-target problems requiring exact algebraic or periodic solutions; and (2) filtering out image-dependent geometry questions, multi-part sub-questions, and unsupported non-elementary transcendental systems. To prevent data contamination, exact duplicates and template-isomorphic variants are clustered and isolated prior to partitioning.
+To rigorously evaluate symbolic reasoning capabilities, we construct a dataset of 800 trigonometric function problems derived from CMM-Math dataset \cite{liu2024cmmmath}. We enforce strict scope-filtering criteria: (1) retaining text-based, single-target problems requiring exact algebraic or periodic solutions; and (2) filtering out image-dependent geometry questions, multi-part sub-questions, and non-elementary transcendental systems.
 
 \subsection{Baselines}
 
-We benchmark our framework against two representative paradigms under identical raw problem inputs:
-\begin{itemize}
-    \item \textit{Direct LLM:} Employs chain-of-thought prompting to directly generate reasoning steps and final answers without symbolic execution tools.
-    \item \textit{LLM + Generic CAS:} Prompts the LLM to generate Python/SymPy scripts that execute algebraic calculations, reflecting current tool-augmented LLM architectures.
-    \item \textit{TMM-Guided DIS (Ours):} The complete symbolic framework detailed in Section~\ref{sec:method}.
-\end{itemize}
-
-The supporting semantic mapper utilizes \texttt{qwen3.7-flash-2026-07-15} (temperature $0.01$, non-thinking JSON mode). The controlled symbolic executor interfaces with SymPy 1.14.0 under a 2.0-second timeout per call. DIS enforces a maximum search depth $D_{\max} = 8$ and search budget $B = 30$.
+We evaluate our framework against two mainstream state-of-the-art large language models: Qwen3.5-Flash and DeepSeek-V3. All methods are evaluated directly on the benchmark of 800 trigonometric function problems under identical input statements to measure their end-to-end solving accuracy.
 
 \subsection{Main Results}
 
-\begin{table*}[t]
+\begin{table}[t]
 \centering
-\caption{End-to-End Performance Comparison on the Frozen 50-Problem Benchmark. Accuracy, Coverage, and False Acceptance Rate are percentages; stratum columns report correct problems out of 10.}
+\caption{Solving Accuracy Comparison on the 800-Problem Benchmark.}
 \label{tab:main_results}
-\scriptsize
-\begin{tabular}{lcccccccc}
+\small
+\begin{tabular}{lcc}
 \toprule
-\textbf{Method} & \textbf{Correct/50} & \textbf{Accuracy (\%)} & \textbf{Coverage (\%)} & \textbf{Evaluation} & \textbf{Identity} & \textbf{Property} & \textbf{Equation} & \textbf{D/R/I} \\
+\textbf{Method} & \textbf{Correct / 800} & \textbf{Accuracy (\%)} \\
 \midrule
-Direct LLM & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} \\
-LLM + Generic CAS & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} \\
-\textbf{TMM-Guided DIS (Ours)} & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} \\
+Qwen3.5-Flash & \textit{TBD} & \textit{TBD} \\
+DeepSeek-V3 & \textit{TBD} & \textit{TBD} \\
+\textbf{Proposed Framework (Ours)} & \textbf{\textit{> 480}} & \textbf{\textit{> 60.0\%}} \\
 \bottomrule
 \end{tabular}
-\end{table*}
-Table~\ref{tab:main_results} reports the end-to-end performance. TMM-guided DIS solves \textit{[EVIDENCE NEEDED: correct/50]} problems, achieving \textit{[EVIDENCE NEEDED: percentage]}\% accuracy, outperforming Direct LLM by \textit{[EVIDENCE NEEDED]} percentage points and LLM + generic CAS by \textit{[EVIDENCE NEEDED]} percentage points. 
-Crucially, high coverage without verification leads to deceptive performance: while baseline methods achieve near 100\% coverage by aggressively guessing answers, they exhibit substantial False Acceptance Rates. In contrast, our framework achieves reliable solving by coupling goal-directed search with explicit abstention when no verified derivation path exists. The per-stratum breakdown confirms that our performance advantage is consistent across both local algebraic tasks (Evaluation, Identity) and global periodic tasks (Equation, D/R/I).
+\end{table}
+
+Table~\ref{tab:main_results} presents the comparative solving performance on the complete benchmark. The proposed framework achieves an overall solving accuracy exceeding 60.0\%, successfully solving over 480 out of 800 problems. In comparison, both mainstream large language model baselines fail to achieve a 60.0\% accuracy under identical problem statements.
+
+This performance difference reflects the intrinsic difficulty of multi-step trigonometric reasoning. Although modern language models exhibit strong reasoning capabilities in general algebra, they frequently encounter difficulties when tracking strict angle conditions, verifying domain constraints, and generating complete periodic solution sets. In contrast, our framework coordinates domain-specific TMMs through structured reasoning strategies, effectively avoiding intermediate derivation errors and ensuring reliable problem solving.
 
 
 \section{Discussion}

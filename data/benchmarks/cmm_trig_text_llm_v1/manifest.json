@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "name": "CMM-Math trigonometry text-only direct-LLM evaluation",
+  "frozen": true,
+  "source_path": "data/CMM-Math/data.jsonl",
+  "source_sha256": "4a3b7c103b97676f0624143ae89140663ee1276bf365c27f1f4cce0bd531c0a5",
+  "source_count": 795,
+  "included_count": 726,
+  "excluded_nonempty_image_count": 69,
+  "multiple_choice_count": 369,
+  "open_count": 357,
+  "open_missing_answer_count": 20,
+  "selection_path": "selection.jsonl",
+  "selection_sha256": "a56026407c8a9b2478dfd087dfde29a72c49cdc5364a96ab412bdb7be722ce5a",
+  "scope_label": "CMM-Math trigonometry text-only subset accuracy",
+  "selection_rule": "include only rows whose image array is empty; apply no other scope filter"
+}
