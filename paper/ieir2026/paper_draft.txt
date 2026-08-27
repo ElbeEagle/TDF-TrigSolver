@@ -26,7 +26,7 @@ The primary contributions of this paper are as follows:
     \item A decoupled reasoning strategy (DRS) is developed to dynamically schedule and execute TMMs.
 \end{enumerate}
 
-The remainder of this paper is structured as follows: Section~\ref{sec:related_work} reviews related work in formal math reasoning and tool-augmented LLMs; Section~\ref{sec:problem_formulation} formalizes the problem definition and understood state; Section~\ref{sec:method} details the TMM library and dynamic DIS algorithm; Section~\ref{sec:experiments} presents the experimental setup, baseline comparisons, and ablation analyses; Section~\ref{sec:discussion} discusses theoretical insights and scope boundaries; and Section~\ref{sec:conclusion} concludes the paper.
+The remainder of this paper is structured as follows: Section~\ref{sec:related_work} reviews related work in formal math reasoning and tool-augmented LLMs; Section~\ref{sec:problem_formulation} formalizes the problem definition and understood state; Section~\ref{sec:method} details the TMM library and dynamic DRS algorithm; Section~\ref{sec:experiments} presents the experimental setup, baseline comparisons, and ablation analyses; Section~\ref{sec:discussion} discusses theoretical insights and scope boundaries; and Section~\ref{sec:conclusion} concludes the paper.
 
 \section{Related Work}
 \label{sec:related_work}
@@ -41,7 +41,7 @@ Broad mathematical benchmarks, including MATH, MathVista, MathVerse, CMM-Math, a
 
 \subsection{Structured Function Problem Solving}
 
-Relation-centric algorithms for text-diagram function problems separate problem understanding from symbolic solving by first acquiring an understood state from the input \cite{yu2022func-relation}. Subsequent TDF research formalizes uniform states, function meta-models, and a Decoupled Inference Strategy that separates procedural control from function-specific execution \cite{yu2026udfsolver}. We adopt the established understood-state interface and the general decoupling principle rather than claiming them as new concepts. This paper specializes the reasoning layer for trigonometric functions: its TMMs encode angle, equivalence, branch, and periodic prerequisites, while its DIS dynamically explores validated transitions and checks global answer completeness.
+Relation-centric algorithms for text-diagram function problems separate problem understanding from symbolic solving by first acquiring an understood state from the input \cite{yu2022func-relation}. Subsequent TDF research formalizes uniform states, function meta-models, and a Decoupled Inference Strategy that separates procedural control from function-specific execution \cite{xiong2026udfsolver}. We adopt the established understood-state interface and the general decoupling principle rather than claiming them as new concepts. This paper specializes the reasoning layer for trigonometric functions: its TMMs encode angle, equivalence, branch, and periodic prerequisites, while its DRS dynamically explores validated transitions and checks global answer completeness.
 
 
 \section{Problem Formulation}
@@ -63,9 +63,9 @@ where $T$ denotes the natural-language problem text containing mathematical expr
 
 The primary objective of trigonometric function problem solving is to derive a solution from the input $P$. We formalize the solver output as a structured tuple:
 \begin{equation}
-    S = (A, \mathcal{E}, \mathcal{T}),
+    S = (A, \mathcal{E}),
 \end{equation}
-where $A$ denotes the primary answer, such as an exact value, an algebraic expression, or a functional property. The term $\mathcal{E}$ represents the exact solution set, which can be an finite subset or an infinite periodic set over the real domain $\mathbb{R}$. The sequence $\mathcal{T}$ records the step-by-step trace of validated symbolic state transitions. For multiple-choice questions, the solver first derives the exact mathematical solution $S$ and subsequently matches it with the equivalent candidate in $\mathcal{O}$.
+where $A$ denotes the primary answer, such as an exact value, an algebraic expression, or a functional property. The term $\mathcal{E}$ represents the exact solution set, which can be an finite subset or an infinite periodic set over the real domain $\mathbb{R}$.
 
 Similar to many existing algorithms, the proposed algorithm comprises two phases of problem understanding and symbolic solver. The intermediate results produced by a solving algorithm are also called problem states. The understood state defined below is one of the critical states.
 
@@ -119,11 +119,11 @@ Given an intermediate state $U^{(j)}$, the execution of model $\mathcal{M}$ is g
 \begin{equation}
     U^{(j+1)} = 
     \begin{cases} 
-        \mathcal{T}(U^{(j)}, \mathcal{O}(U^{(j)})), & \text{if } \mathcal{P}(U^{(j)}) \land \mathcal{V}(U^{(j)}, \widetilde{U}) = \text{true}, \\
+        \widetilde{U}, & \text{if } \mathcal{P}(U^{(j)}) \land \mathcal{V}(U^{(j)}, \widetilde{U}), \\
         \emptyset, & \text{otherwise,}
     \end{cases}
 \end{equation}
-where $\widetilde{U} = \mathcal{T}(U^{(j)}, \mathcal{O}(U^{(j)}))$ is the candidate successor state. The precondition $\mathcal{P}$ prevents invalid model invocations, while the validation condition $\mathcal{V}$ guarantees that the committed state preserves algebraic equivalence over the active domain.
+where $\widetilde{U} = \mathcal{T}(U^{(j)}, \mathcal{O}(U^{(j)}))$ denotes the candidate successor state.
 
 \begin{table*}[t]
 \centering

@@ -1,0 +1,13 @@
+yu2022func-relation, A relation-centric algorithm for solving text-diagram function problems
+lu_radarmath_2021, RadarMath: An Intelligent Tutoring System for Math Education
+xiong2026udfsolver, UDfSolver: Uniform Representation and Decoupled Inference Strategy for Text-Diagram Function Problems Solving
+liu2022autotrig, Learning to Prove Trigonometric Identities
+zhao2024ssccot, Stepwise Self-Consistent Mathematical Reasoning with Large Language Models
+xiong2023trigo, TRIGO: Benchmarking Formal Mathematical Proof Reduction for Generative Language Models
+yu2023implicit, Solving arithmetic word problems by synergizing syntax-semantics extractor for explicit relations and neural network miner for implicit relations
+hendrycks2021math, Measuring Mathematical Problem Solving With the MATH Dataset
+lu2024mathvista, MathVista: Evaluating Mathematical Reasoning of Foundation Models in Visual Contexts
+zhang2024mathverse, MathVerse: Does Your Multi-modal LLM Truly See the Diagrams in Visual Math Problems?
+liu2024cmmmath, CMM-Math: A Chinese Multimodal Math Dataset To Evaluate and Enhance the Mathematics Reasoning of Large Multimodal Models
+xu2025ugmathbench, UGMathBench: A Diverse and Dynamic Benchmark for Undergraduate-Level Mathematical Reasoning with Large Language Models
+meurer2017sympy, SymPy: symbolic computing in Python
