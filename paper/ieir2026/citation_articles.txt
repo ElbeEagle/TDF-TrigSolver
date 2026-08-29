@@ -1,0 +1,114 @@
+@article{yu2022func-relation,
+  title={A relation-centric algorithm for solving text-diagram function problems},
+  author={Yu, Xinguo and Sun, Huihui and Sun, Chao},
+  journal={Journal of King Saud University-Computer and Information Sciences},
+  volume={34},
+  number={10},
+  pages={8972--8984},
+  year={2022},
+  publisher={Elsevier}
+}
+
+@inproceedings{lu_radarmath_2021,
+  title={Radarmath: An intelligent tutoring system for math education},
+  author={Lu, Yu and Pian, Yang and Chen, Penghe and Meng, Qinggang and Cao, Yunbo},
+  booktitle={Proceedings of the AAAI conference on artificial intelligence},
+  volume={35},
+  number={18},
+  pages={16087--16090},
+  year={2021}
+}
+
+@article{xiong2026udfsolver,
+  title={UDfSolver: Uniform Representation and Decoupled Inference Strategy for Text-Diagram Function Problems Solving},
+  author={Xiong, Feng and Yu, Xinguo and Huang, Litian and Yu, Dian},
+  journal={Expert Systems with Applications},
+  pages={133229},
+  year={2026},
+  publisher={Elsevier}
+}
+
+@article{liu2022autotrig,
+  title={Learning to prove trigonometric identities},
+  author={Liu, Zhou and Li, Yujun and Liu, Zhengying and Li, Lin and Li, Zhenguo},
+  journal={arXiv preprint arXiv:2207.06679},
+  year={2022}
+}
+
+@article{zhao2024ssccot,
+  title={Stepwise self-consistent mathematical reasoning with large language models},
+  author={Zhao, Zilong and Rong, Yao and Guo, Dongyang and G{\"o}zl{\"u}kl{\"u}, Emek and G{\"u}lboy, Emir and Kasneci, Enkelejda},
+  journal={arXiv preprint arXiv:2402.17786},
+  year={2024}
+}
+
+@inproceedings{xiong2023trigo,
+  title={Trigo: Benchmarking formal mathematical proof reduction for generative language models},
+  author={Xiong, Jing and Shen, Jianhao and Yuan, Ye and Wang, Haiming and Yin, Yichun and Liu, Zhengying and Li, Lin and Guo, Zhijiang and Cao, Qingxing and Huang, Yinya and others},
+  booktitle={Proceedings of the 2023 Conference on Empirical Methods in Natural Language Processing},
+  pages={11594--11632},
+  year={2023}
+}
+
+@article{yu2023implicit,
+  title={Solving arithmetic word problems by synergizing syntax-semantics extractor for explicit relations and neural network miner for implicit relations},
+  author={Yu, Xinguo and Lyu, Xiaopan and Peng, Rao and Shen, Jun},
+  journal={Complex \& Intelligent Systems},
+  volume={9},
+  number={1},
+  pages={697--717},
+  year={2023},
+  publisher={Springer}
+}
+
+@article{hendrycks2021math,
+  title={Measuring mathematical problem solving with the math dataset},
+  author={Hendrycks, Dan and Burns, Collin and Kadavath, Saurav and Arora, Akul and Basart, Steven and Tang, Eric and Song, Dawn and Steinhardt, Jacob},
+  journal={arXiv preprint arXiv:2103.03874},
+  year={2021}
+}
+
+@inproceedings{lu2024mathvista,
+  title={Mathvista: Evaluating mathematical reasoning of foundation models in visual contexts},
+  author={Lu, Pan and Bansal, Hritik and Xia, Tony and Liu, Jiacheng and Li, Chunyuan and Hajishirzi, Hannaneh and Cheng, Hao and Chang, Kai-Wei and Galley, Michel and Gao, Jianfeng},
+  booktitle={International Conference on Learning Representations},
+  volume={2024},
+  pages={23439--23554},
+  year={2024}
+}
+
+@inproceedings{zhang2024mathverse,
+  title={Mathverse: Does your multi-modal llm truly see the diagrams in visual math problems?},
+  author={Zhang, Renrui and Jiang, Dongzhi and Zhang, Yichi and Lin, Haokun and Guo, Ziyu and Qiu, Pengshuo and Zhou, Aojun and Lu, Pan and Chang, Kai-Wei and Qiao, Yu and others},
+  booktitle={European Conference on Computer Vision},
+  pages={169--186},
+  year={2024},
+  organization={Springer}
+}
+
+@inproceedings{liu2024cmmmath,
+  title={Cmm-math: A chinese multimodal math dataset to evaluate and enhance the mathematics reasoning of large multimodal models},
+  author={Liu, Wentao and Pan, Qianjun and Zhang, Yi and Liu, Zhuo and Wu, Ji and Zhou, Jie and Zhou, Aimin and Chen, Qin and Jiang, Bo and He, Liang},
+  booktitle={Proceedings of the 33rd ACM International Conference on Multimedia},
+  pages={12585--12591},
+  year={2025}
+}
+
+@inproceedings{xu2025ugmathbench,
+  title={Ugmathbench: A diverse and dynamic benchmark for undergraduate-level mathematical reasoning with large language models},
+  author={Xu, Xin and Zhang, Jiaxin and Chen, Tianhao and Chao, Zitong and Hu, Jishan and Yang, Can},
+  booktitle={International Conference on Learning Representations},
+  volume={2025},
+  pages={78770--78813},
+  year={2025}
+}
+
+@article{meurer2017sympy,
+  title={SymPy: symbolic computing in Python},
+  author={Meurer, Aaron and Smith, Christopher P and Paprocki, Mateusz and {\v{C}}ert{\'\i}k, Ond{\v{r}}ej and Kirpichev, Sergey B and Rocklin, Matthew and Kumar, AMiT and Ivanov, Sergiu and Moore, Jason K and Singh, Sartaj and others},
+  journal={PeerJ Computer Science},
+  volume={3},
+  pages={e103},
+  year={2017},
+  publisher={PeerJ Inc.}
+}

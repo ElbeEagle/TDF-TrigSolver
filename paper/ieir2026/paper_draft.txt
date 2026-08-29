@@ -49,8 +49,8 @@ Relation-centric algorithms for text-diagram function problems separate problem 
 
 \begin{figure*}[htbp]
 \centering
-\includegraphics[width=0.96\textwidth]{figures/figure1_tmm_guided_dis_architecture.png}
-\caption{The proposed meta-model-guided symbolic reasoning framework. The front end converts the raw problem $P$ into an understood state $U^{(0)}$. The reasoning core, governed by DRS, dynamically schedules applicable TMMs from the library $\Lambda$, executes bounded symbolic operations, verifies state transitions, and traverses the state space to produce the final solution $S$.}
+\includegraphics[width=0.96\textwidth]{figures/figure1_tmm_drs_v3_4k.png}
+\caption{Overview of the proposed framework for trigonometric function problem solving. Decoupled reasoning strategy coordinates the trigonometric meta-models through pre-defined pathways and dynamic exploration to derive solutions from understood state.}
 \label{fig:reasoning_overview}
 \end{figure*}
 
